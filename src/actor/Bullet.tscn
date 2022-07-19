@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://src/actor/Bullet.gd" type="Script" id=1]
+
+[sub_resource type="CapsuleShape2D" id=5]
+
+[node name="Bullet" type="KinematicBody2D"]
+collision_layer = 4
+script = ExtResource( 1 )
+speed = 300.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource( 5 )
+
+[node name="Line2D" type="Line2D" parent="."]
+rotation = 1.5708
+points = PoolVector2Array( -10, 0, 10, 0 )
+width = 20.0
+default_color = Color( 1, 1, 1, 1 )
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
