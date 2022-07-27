@@ -12,8 +12,10 @@ var is_floor := false
 var joy := Vector2.ZERO
 var btnp_jump := false
 var btn_jump := false
-var btnp_action := false
-var btn_action := false
+var btnp_shoot := false
+var btn_shoot := false
+var btnp_grab := false
+var btn_grab := false
 
 var is_jump := false
 var holding_jump := 0.0
@@ -26,12 +28,18 @@ var jump_time := 0.7
 var jump_clock := 0.0
 var jump_minimum := 0.03
 
-onready var sprite := $Sprite
-
 var bullet_scene = preload("res://src/actor/Bullet.tscn")
 
 var fire_clock := 0.0
 export var fire_rate := 1.0
+
+var pickup_body : KinematicBody2D = null
+onready var area_pickup := $AreaPickup
+export var throw_vel := Vector2(500, -500)
+
+var ignore_body : KinematicBody2D = null 
+var is_ignore_end := false
+onready var area_body := $AreaBody
 
 func _ready():
 	solve_jump()
@@ -50,13 +58,15 @@ func _physics_process(delta):
 	btnp_jump = Input.is_action_just_pressed("jump")
 	btn_jump = Input.is_action_pressed("jump")
 	holding_jump = holding_jump + delta if btn_jump else 0.0
-	btnp_action = Input.is_action_just_pressed("action")
-	btn_action = Input.is_action_pressed("action")
+	btnp_shoot = Input.is_action_just_pressed("shoot")
+	btn_shoot = Input.is_action_pressed("shoot")
+	btnp_grab = Input.is_action_just_pressed("grab")
+	btn_grab = Input.is_action_pressed("grab")
 	
 	# dir x
 	if joy.x != 0:
 		dir_x = joy.x
-		sprite.flip_v = dir_x < 0
+		#sprite.flip_v = dir_x < 0
 	
 	# on floor
 	if is_floor:
@@ -83,7 +93,6 @@ func _physics_process(delta):
 	# walking
 	velocity.x = lerp(velocity.x, joy.x * walk_speed , (floor_accel if is_floor else air_accel) * delta)
 	
-	
 	# gravity
 	velocity.y += (jump_gravity if is_jump else fall_gravity) * delta
 	
@@ -93,10 +102,17 @@ func _physics_process(delta):
 	# shoot
 	fire_clock = min(fire_clock + delta, fire_rate)
 	
-	if btn_action:
+	if btn_shoot:
 		if fire_clock == fire_rate:
 			fire_clock = 0.0
 			shoot()
+	
+	# grab
+	if btnp_grab:
+		if pickup_body == null:
+			grab()
+		else:
+			drop()
 
 func shoot():
 	var b = bullet_scene.instance()
@@ -129,3 +145,51 @@ func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
 	fall_gravity = jump_gravity * 2.0
+
+func grab():
+	# find clostest box
+	var d = 1000.0
+	for i in area_pickup.get_overlapping_bodies():
+		var dt = position.distance_to(i.position)
+		if dt < d:
+			pickup_body = i
+			d = dt
+	
+	# pickup
+	if is_instance_valid(pickup_body):
+		set_ignore(pickup_body)
+		pickup_body.pickup(self)
+		print(pickup_body.name)
+
+func drop():
+	print("drop")
+	
+	is_ignore_end = true
+	pickup_body.set_physics_process(true)
+	pickup_body.drop()
+	
+	# drop
+	if joy.y == 1:
+		pass
+	# throw
+	else:
+		var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
+		pickup_body.velocity = tv
+	
+	pickup_body = null
+
+func set_ignore(body):
+	ignore_body = body
+	add_collision_exception_with(body)
+	body.add_collision_exception_with(self)
+	is_ignore_end = false
+
+func clear_ignore():
+	remove_collision_exception_with(ignore_body)
+	ignore_body.remove_collision_exception_with(self)
+	ignore_body = null
+
+func _on_BodyArea_body_exited(body):
+	if is_ignore_end and body == ignore_body:
+		is_ignore_end = false
+		clear_ignore()

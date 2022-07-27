@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://src/actor/Box.gd" type="Script" id=2]
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 1, 0.654902, 0.439216, 1 )
+border_width_left = 12
+border_width_top = 12
+border_width_right = 12
+border_width_bottom = 12
+border_color = Color( 0.741176, 0.423529, 0.2, 1 )
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+
+[sub_resource type="RectangleShape2D" id=10]
+extents = Vector2( 50, 50 )
+
+[node name="Box" type="KinematicBody2D"]
+z_index = 5
+z_as_relative = false
+script = ExtResource( 2 )
+fall_gravity = 2000.0
+floor_accel = 7.0
+snap_time = 0.225
+
+[node name="Sprite" type="Node2D" parent="."]
+
+[node name="Panel" type="Panel" parent="Sprite"]
+margin_left = -50.0
+margin_top = -50.0
+margin_right = 50.0
+margin_bottom = 50.0
+custom_styles/panel = SubResource( 8 )
+
+[node name="Line2D" type="Line2D" parent="Sprite"]
+rotation = 0.785397
+points = PoolVector2Array( 55, 0, 0, 0, 0, 55, 0, 0, -55, 0, 0, 0, 0, -55 )
+width = 13.0
+default_color = Color( 0.741176, 0.423529, 0.2, 1 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource( 10 )
