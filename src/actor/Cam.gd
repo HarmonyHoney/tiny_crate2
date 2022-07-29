@@ -11,4 +11,6 @@ func _physics_process(delta):
 		
 		if is_follow_x:
 			position.x = target_node.global_position.x
+		if is_follow_y:
+			position.y = target_node.global_position.y
 		

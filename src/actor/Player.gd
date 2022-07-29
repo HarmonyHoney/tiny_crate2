@@ -1,14 +1,11 @@
-extends KinematicBody2D
+extends Actor
+class_name Player
 
-
-var velocity := Vector2.ZERO
 var walk_speed := 500.0
 var floor_accel := 12.0
 var air_accel := 7.0
 var dir_x := 1
 
-
-var is_floor := false
 var joy := Vector2.ZERO
 var btnp_jump := false
 var btn_jump := false
@@ -33,17 +30,22 @@ var bullet_scene = preload("res://src/actor/Bullet.tscn")
 var fire_clock := 0.0
 export var fire_rate := 1.0
 
-var pickup_body : KinematicBody2D = null
-onready var area_pickup := $AreaPickup
+var pickup = null
 export var throw_vel := Vector2(500, -500)
-
-var ignore_body : KinematicBody2D = null 
 var is_ignore_end := false
-onready var area_body := $AreaBody
+
+func _enter_tree():
+	Shared.actors.append(self)
+
+func _exit_tree():
+	Shared.actors.erase(self)
 
 func _ready():
 	solve_jump()
 	
+	UI.debug.track(self, "position")
+	UI.debug.track(self, "remainder")
+	UI.debug.track(self, "has_hit")
 	UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "is_jump")
 
@@ -109,7 +111,7 @@ func _physics_process(delta):
 	
 	# grab
 	if btnp_grab:
-		if pickup_body == null:
+		if pickup == null:
 			grab()
 		else:
 			drop()
@@ -121,25 +123,6 @@ func shoot():
 	b.rotation_degrees = 90 * dir_x
 	b.speed = 1000
 
-func move(_vel := Vector2.ZERO):
-	var move_x = Vector2(_vel.x, 0)
-	var is_x = test_move(transform, move_x)
-	move_and_collide(move_x)
-	
-	# hit x
-	if is_x:
-		velocity.x = 0.0
-	
-	var move_y = Vector2(0, _vel.y)
-	var is_y = test_move(transform, move_y)
-	move_and_collide(move_y)
-	
-	# hit y
-	if is_y:
-		velocity.y = 0.0
-	
-	is_floor = is_y and _vel.y > 0.0
-
 # Sebastian Lague's formula
 func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
@@ -149,47 +132,43 @@ func solve_jump():
 func grab():
 	# find clostest box
 	var d = 1000.0
-	for i in area_pickup.get_overlapping_bodies():
+	
+	var a = get_actors("box", position, Vector2.ONE * 100, null)
+	
+	print(a)
+	
+	for i in a:
 		var dt = position.distance_to(i.position)
 		if dt < d:
-			pickup_body = i
+			pickup = i
 			d = dt
 	
+	
 	# pickup
-	if is_instance_valid(pickup_body):
-		set_ignore(pickup_body)
-		pickup_body.pickup(self)
-		print(pickup_body.name)
+	if is_instance_valid(pickup):
+		set_ignore(pickup)
+		pickup.pickup(self)
+		print(pickup.name)
 
 func drop():
 	print("drop")
 	
 	is_ignore_end = true
-	pickup_body.set_physics_process(true)
-	pickup_body.drop()
 	
-	# drop
-	if joy.y == 1:
-		pass
-	# throw
-	else:
-		var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
-		pickup_body.velocity = tv
+	var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
 	
-	pickup_body = null
+	# drop / throw
+	pickup.drop(Vector2.ZERO if joy.y == 1 else tv)
+	
+	pickup = null
 
 func set_ignore(body):
-	ignore_body = body
-	add_collision_exception_with(body)
-	body.add_collision_exception_with(self)
+	ignore = body
+	ignore.ignore = self
 	is_ignore_end = false
 
-func clear_ignore():
-	remove_collision_exception_with(ignore_body)
-	ignore_body.remove_collision_exception_with(self)
-	ignore_body = null
-
-func _on_BodyArea_body_exited(body):
-	if is_ignore_end and body == ignore_body:
-		is_ignore_end = false
-		clear_ignore()
+func just_moved():
+	if is_ignore_end and is_instance_valid(ignore):
+		if !get_rect().intersects(ignore.get_rect()):
+			ignore.ignore = null
+			ignore = null
