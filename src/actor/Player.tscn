@@ -10,11 +10,12 @@ z_index = 10
 z_as_relative = false
 script = ExtResource( 2 )
 size = Vector2( 20, 30 )
+is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true
 fire_rate = 0.25
-throw_vel = Vector2( 350, -700 )
+throw_vel = Vector2( 350, -500 )
 
 [node name="Image" type="Node2D" parent="."]
 

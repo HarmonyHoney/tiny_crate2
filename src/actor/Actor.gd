@@ -3,7 +3,7 @@ extends Node2D
 class_name Actor
 
 export var size := Vector2.ONE * 50 setget set_size
-export var is_draw_size := true setget set_draw
+export var is_draw_size := false setget set_draw
 
 var velocity := Vector2.ZERO
 var remainder := Vector2.ZERO
@@ -152,3 +152,12 @@ func get_actors(_group = "", _pos = position, _size = size, _ignore = ignore):
 				act.append(a)
 	return act
 
+func aabb(ax, ay, aw, ah, bx, by, bw, bh) -> bool:
+	return ax < bx + bw and bx < ax + aw and ay < by + bh and by < ay + ah
+
+#function CheckCollision(x1,y1,w1,h1, x2,y2,w2,h2)
+#  return x1 < x2+w2 and
+#         x2 < x1+w1 and
+#         y1 < y2+h2 and
+#         y2 < y1+h1
+#end

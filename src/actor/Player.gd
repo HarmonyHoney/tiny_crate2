@@ -1,3 +1,4 @@
+tool
 extends Actor
 class_name Player
 
@@ -34,13 +35,9 @@ var pickup = null
 export var throw_vel := Vector2(500, -500)
 var is_ignore_end := false
 
-func _enter_tree():
-	Shared.actors.append(self)
-
-func _exit_tree():
-	Shared.actors.erase(self)
-
 func _ready():
+	if Engine.editor_hint: return
+	
 	solve_jump()
 	
 	UI.debug.track(self, "position")
@@ -50,10 +47,13 @@ func _ready():
 	UI.debug.track(self, "is_jump")
 
 func _input(event):
+	if Engine.editor_hint: return
+	
 	if event is InputEventKey and event.is_pressed() and !event.is_echo() and event.scancode == KEY_R:
 		get_tree().reload_current_scene()
 
 func _physics_process(delta):
+	if Engine.editor_hint: return
 	
 	# input
 	joy = Input.get_vector("left", "right", "up", "down").round()
@@ -133,7 +133,7 @@ func grab():
 	# find clostest box
 	var d = 1000.0
 	
-	var a = get_actors("box", position, Vector2.ONE * 100, null)
+	var a = get_actors("box", position, Vector2.ONE * 75, null)
 	
 	print(a)
 	

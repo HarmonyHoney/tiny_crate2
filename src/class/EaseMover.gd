@@ -37,3 +37,6 @@ func move(delta, arg := show):
 		node.rect_position = current
 	
 	return current
+
+func reset():
+	clock = 0.0
