@@ -8,6 +8,7 @@ var air_accel := 7.0
 var dir_x := 1
 
 var joy := Vector2.ZERO
+var joy_last := Vector2.ZERO
 var btnp_jump := false
 var btn_jump := false
 var btnp_shoot := false
@@ -32,8 +33,13 @@ var fire_clock := 0.0
 export var fire_rate := 1.0
 
 var pickup = null
+var is_grab := false
 export var throw_vel := Vector2(500, -500)
 var is_ignore_end := false
+var grab_ease := EaseMover.new(0.1)
+
+onready var arm_l := $Image/ArmL
+onready var arm_r := $Image/ArmR
 
 func _ready():
 	if Engine.editor_hint: return
@@ -51,11 +57,14 @@ func _input(event):
 	
 	if event is InputEventKey and event.is_pressed() and !event.is_echo() and event.scancode == KEY_R:
 		get_tree().reload_current_scene()
+	
+	get_tree().connect("idle_frame", self, "idle_frame")
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
 	# input
+	joy_last = joy
 	joy = Input.get_vector("left", "right", "up", "down").round()
 	btnp_jump = Input.is_action_just_pressed("jump")
 	btn_jump = Input.is_action_pressed("jump")
@@ -115,6 +124,27 @@ func _physics_process(delta):
 			grab()
 		else:
 			drop()
+	
+	# move arms
+	if is_grab:
+		grab_ease.count(delta)
+	else:
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
+	
+	
+	# open door
+	if joy.y == -1 and joy_last.y != -1:
+		var d = get_actor("door")
+		if is_instance_valid(d):
+			if d.scene_path != "":
+				get_tree().change_scene(d.scene_path)
+
+func idle_frame():
+	# grab
+	if is_grab and is_instance_valid(pickup):
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(to_local(pickup.global_position + Vector2(-50, 50)), grab_ease.frac()))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(to_local(pickup.global_position + Vector2(50, 50)), grab_ease.frac()))
 
 func shoot():
 	var b = bullet_scene.instance()
@@ -148,6 +178,8 @@ func grab():
 	if is_instance_valid(pickup):
 		set_ignore(pickup)
 		pickup.pickup(self)
+		is_grab = true
+		grab_ease.reset()
 		print(pickup.name)
 
 func drop():
@@ -161,6 +193,7 @@ func drop():
 	pickup.drop(Vector2.ZERO if joy.y == 1 else tv)
 	
 	pickup = null
+	is_grab = false
 
 func set_ignore(body):
 	ignore = body

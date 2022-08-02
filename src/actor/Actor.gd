@@ -12,7 +12,6 @@ var remainder := Vector2.ZERO
 export var is_moving := false
 export var is_solid := false
 export var is_colliding := false
-export var is_using_gravity := false
 var ignore = null
 
 # has moved or hit solid
@@ -151,13 +150,3 @@ func get_actors(_group = "", _pos = position, _size = size, _ignore = ignore):
 			if Rect2(_pos - _size, _size * 2.0).intersects(a.get_rect()):
 				act.append(a)
 	return act
-
-func aabb(ax, ay, aw, ah, bx, by, bw, bh) -> bool:
-	return ax < bx + bw and bx < ax + aw and ay < by + bh and by < ay + ah
-
-#function CheckCollision(x1,y1,w1,h1, x2,y2,w2,h2)
-#  return x1 < x2+w2 and
-#         x2 < x1+w1 and
-#         y1 < y2+h2 and
-#         y2 < y1+h1
-#end

@@ -25,53 +25,15 @@ var grab_to := Vector2.ZERO
 export var snap_squish := Vector2.ONE * 0.7
 
 
-var is_line := false
-onready var lines_node := $Lines
-onready var lines := lines_node.get_children()
-var line_ease := EaseMover.new(0.3)
-var line_step := 0
-onready var line_start_alpha : float = $Lines.modulate.a
-
-var is_toss := false
-var toss_dir := 1
-var toss_ease := EaseMover.new(0.5)
-
 func _ready():
 	if Engine.editor_hint: return
+	#position = position.snapped(Vector2.ONE * 25)
 	
-	UI.debug.track(self, "is_floor")
+	#UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "position")
-	
-	position = position.snapped(Vector2.ONE * 50)
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
-	
-#	if is_toss:
-#		position = toss_ease.move(delta)
-#
-#		if toss_ease.is_complete:
-#			is_toss = false
-#			velocity = Vector2.ZERO
-#
-#		return
-#
-#	if is_line:
-#		line_ease.count(delta)
-#
-#		if line_step == 0:
-#			for i in lines:
-#				i.scale = Vector2.ONE * line_ease.smooth()
-#		elif line_step == 1:
-#			lines_node.modulate.a = (1.0 - line_ease.smooth()) * line_start_alpha
-#		else:
-#			lines_node.visible = false
-#			is_line = false
-#
-#		if line_ease.is_complete:
-#			line_step += 1
-#			line_ease.reset()
-	
 	
 	# pickup squish
 	if is_pickup_squish:
@@ -81,22 +43,24 @@ func _physics_process(delta):
 		
 		if pickup_ease.is_complete:
 			is_pickup_squish = false
-	
+	# snap
 	if is_snap:
 		snap_ease.count(delta)
-
+		
 		sprite.position = snap_from.linear_interpolate(Vector2.ZERO, snap_ease.smooth())
 		sprite.scale = snap_squish.linear_interpolate(Vector2.ONE, snap_ease.smooth())
-
+		
 		if snap_ease.is_complete:
 			is_snap = false
+	# grab
 	elif is_grab:
 		if is_instance_valid(grab_node):
-			var p = (grab_node.position + Vector2(0, -100)).snapped(Vector2.ONE * 25)
+			var p = (grab_node.position + Vector2(0, -110))#.snapped(Vector2.ONE * 25)
 			if !check_solid(p):
 				grab_to = p
 		
-		position = position.linear_interpolate(grab_to, 15.0 * delta).round()
+		position = position.linear_interpolate(grab_to, 20.0 * delta).round()
+	# move
 	else:
 		# on floor
 		if is_floor:
@@ -141,14 +105,3 @@ func snap():
 	velocity = Vector2.ZERO
 	is_snap = true
 	snap_ease.reset()
-	
-#	is_line = true
-#	line_step = 0
-#	lines_node.modulate.a = line_start_alpha
-#	lines_node.visible = true
-#
-#	for i in lines:
-#		i.scale = Vector2.ZERO
-#
-#	lines_node.rotation_degrees = 90 * (randi() % 4)
-	
