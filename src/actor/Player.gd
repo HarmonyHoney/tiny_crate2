@@ -22,8 +22,10 @@ var holding_limit := 0.3
 var jump_speed := 500.0
 var jump_gravity := 500.0
 var fall_gravity := 1000.0
-var jump_height := 240.0
-var jump_time := 0.7
+export var set_jump := false setget set_jump
+export var jump_height := 240.0
+export var jump_time := 0.7
+export var fall_mult := 2.0
 var jump_clock := 0.0
 var jump_minimum := 0.03
 
@@ -36,10 +38,13 @@ var pickup = null
 var is_grab := false
 export var throw_vel := Vector2(500, -500)
 var is_ignore_end := false
-var grab_ease := EaseMover.new(0.1)
+var grab_ease := EaseMover.new(0.15)
+export var grab_length := 500
 
 onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
+onready var image := $Image
+var walk_clock := 0.0
 
 func _ready():
 	if Engine.editor_hint: return
@@ -51,14 +56,14 @@ func _ready():
 	UI.debug.track(self, "has_hit")
 	UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "is_jump")
+	
+	get_tree().connect("idle_frame", self, "idle_frame")
 
 func _input(event):
 	if Engine.editor_hint: return
 	
 	if event is InputEventKey and event.is_pressed() and !event.is_echo() and event.scancode == KEY_R:
 		get_tree().reload_current_scene()
-	
-	get_tree().connect("idle_frame", self, "idle_frame")
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
@@ -123,14 +128,29 @@ func _physics_process(delta):
 		if pickup == null:
 			grab()
 		else:
-			drop()
+			drop(joy.y != 1)
 	
 	# move arms
 	if is_grab:
 		grab_ease.count(delta)
+		
+		var d = position.distance_to(pickup.position)
+		if d > grab_length:
+			drop()
 	else:
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
+	
+	# animation
+	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0
+	
+	if is_floor:
+		if joy.x == 0:
+			image.rotation_degrees = sin(walk_clock * 5.0) * 5
+		else:
+			image.rotation_degrees = sin(walk_clock * 10.0) * 20
+	else:
+		image.rotation_degrees = (dir_x * 7) + sin(walk_clock * 9.0) * 3
 	
 	
 	# open door
@@ -143,8 +163,8 @@ func _physics_process(delta):
 func idle_frame():
 	# grab
 	if is_grab and is_instance_valid(pickup):
-		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(to_local(pickup.global_position + Vector2(-50, 50)), grab_ease.frac()))
-		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(to_local(pickup.global_position + Vector2(50, 50)), grab_ease.frac()))
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(pickup.global_position + Vector2(-50, 50)), grab_ease.frac()))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(pickup.global_position + Vector2(50, 50)), grab_ease.frac()))
 
 func shoot():
 	var b = bullet_scene.instance()
@@ -153,11 +173,15 @@ func shoot():
 	b.rotation_degrees = 90 * dir_x
 	b.speed = 1000
 
+func set_jump(arg := false):
+	set_jump = arg
+	solve_jump()
+
 # Sebastian Lague's formula
 func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
-	fall_gravity = jump_gravity * 2.0
+	fall_gravity = jump_gravity * fall_mult
 
 func grab():
 	# find clostest box
@@ -182,7 +206,7 @@ func grab():
 		grab_ease.reset()
 		print(pickup.name)
 
-func drop():
+func drop(is_throw := false):
 	print("drop")
 	
 	is_ignore_end = true
@@ -190,7 +214,7 @@ func drop():
 	var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
 	
 	# drop / throw
-	pickup.drop(Vector2.ZERO if joy.y == 1 else tv)
+	pickup.drop(tv if is_throw else Vector2.ZERO)
 	
 	pickup = null
 	is_grab = false

@@ -14,8 +14,11 @@ is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true
+jump_time = 0.6
+fall_mult = 2.5
 fire_rate = 0.25
 throw_vel = Vector2( 350, -500 )
+grab_length = 200
 
 [node name="Image" type="Node2D" parent="."]
 
@@ -70,7 +73,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="BodyM" type="Line2D" parent="Image/Body"]
-points = PoolVector2Array( 0, 0, 0, 25.35 )
+points = PoolVector2Array( 0, 0, 0, 15 )
 width = 23.0
 width_curve = SubResource( 4 )
 default_color = Color( 1, 1, 1, 1 )

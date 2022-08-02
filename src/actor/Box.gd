@@ -1,7 +1,6 @@
 tool
 extends Actor
 
-var is_move := true
 export var rise_gravity := 1000.0
 export var fall_gravity := 1000.0
 
@@ -24,6 +23,7 @@ var snap_from := Vector2.ZERO
 var grab_to := Vector2.ZERO
 export var snap_squish := Vector2.ONE * 0.7
 
+export var is_sticky := false
 
 func _ready():
 	if Engine.editor_hint: return
@@ -54,12 +54,11 @@ func _physics_process(delta):
 			is_snap = false
 	# grab
 	elif is_grab:
-		if is_instance_valid(grab_node):
-			var p = (grab_node.position + Vector2(0, -110))#.snapped(Vector2.ONE * 25)
-			if !check_solid(p):
-				grab_to = p
-		
-		position = position.linear_interpolate(grab_to, 20.0 * delta).round()
+		if is_instance_valid(grab_node) and grab_node.grab_ease.is_complete:
+			var p = grab_node.position + Vector2(0, -125)
+			var li = position.linear_interpolate(p, 15 * delta).round()
+			var diff = li - position
+			move(diff)
 	# move
 	else:
 		# on floor
@@ -82,7 +81,7 @@ func pickup(other):
 
 func drop(_vel := Vector2.ZERO):
 	is_grab = false
-	is_move = true
+	is_floor = false
 	is_pickup_squish = true
 	pickup_ease.reset()
 	floor_clock = 0.0
@@ -91,7 +90,8 @@ func drop(_vel := Vector2.ZERO):
 	grab_node = null
 
 func hit_floor():
-	snap()
+	if !is_grab:
+		snap()
 
 func snap():
 	var p = position
