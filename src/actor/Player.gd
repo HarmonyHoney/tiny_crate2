@@ -37,7 +37,7 @@ export var fire_rate := 1.0
 var pickup = null
 var is_grab := false
 export var throw_vel := Vector2(500, -500)
-var is_ignore_end := false
+#var is_ignore_end := false
 var grab_ease := EaseMover.new(0.15)
 export var grab_length := 500
 
@@ -45,6 +45,8 @@ onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
 onready var image := $Image
 var walk_clock := 0.0
+
+var push_ease := EaseMover.new(0.2)
 
 func _ready():
 	if Engine.editor_hint: return
@@ -130,7 +132,25 @@ func _physics_process(delta):
 		else:
 			drop(joy.y != 1)
 	
-	# move arms
+	# push
+	push_ease.count(delta, !is_grab and has_hit.x != 0)
+	
+	if push_ease.is_complete:
+		push_ease.reset()
+		var pb = get_actor("box", position + Vector2(dir_x * 10, 0))
+		if is_instance_valid(pb):
+			pb.push(dir_x)
+			print("push ", pb)
+	
+	# open door
+	if joy.y == -1 and joy_last.y != -1:
+		var d = get_actor("door")
+		if is_instance_valid(d):
+			if d.scene_path != "":
+				get_tree().change_scene(d.scene_path)
+	
+	### animation
+	# arms
 	if is_grab:
 		grab_ease.count(delta)
 		
@@ -141,24 +161,19 @@ func _physics_process(delta):
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
 	
-	# animation
+	# body
 	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0
 	
 	if is_floor:
 		if joy.x == 0:
-			image.rotation_degrees = sin(walk_clock * 5.0) * 5
+			image.rotation_degrees = sin(walk_clock * 4.0) * 5
+			image.position.y = -abs(cos(walk_clock * 4.0) * 5)
 		else:
 			image.rotation_degrees = sin(walk_clock * 10.0) * 20
+			image.position.y = -abs(sin(walk_clock * 10.0) * 20)
 	else:
 		image.rotation_degrees = (dir_x * 7) + sin(walk_clock * 9.0) * 3
-	
-	
-	# open door
-	if joy.y == -1 and joy_last.y != -1:
-		var d = get_actor("door")
-		if is_instance_valid(d):
-			if d.scene_path != "":
-				get_tree().change_scene(d.scene_path)
+		image.position.y = lerp(image.position.y, 0, 10 * delta)
 
 func idle_frame():
 	# grab
@@ -184,10 +199,16 @@ func solve_jump():
 	fall_gravity = jump_gravity * fall_mult
 
 func grab():
-	# find clostest box
+	# find closest box
 	var d = 1000.0
+	var width = 50
+	var height = 10
 	
-	var a = get_actors("box", position, Vector2.ONE * 75, null)
+	var a = []
+	if joy.y == 1:
+		a = get_actors("box", position + Vector2(0, size.y))
+	else:
+		a = get_actors("box", position + Vector2(dir_x * width, -height), Vector2(width, size.y + height), null)
 	
 	print(a)
 	
@@ -197,20 +218,15 @@ func grab():
 			pickup = i
 			d = dt
 	
-	
 	# pickup
 	if is_instance_valid(pickup):
-		set_ignore(pickup)
+		#set_ignore(pickup)
 		pickup.pickup(self)
 		is_grab = true
 		grab_ease.reset()
 		print(pickup.name)
 
 func drop(is_throw := false):
-	print("drop")
-	
-	is_ignore_end = true
-	
 	var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
 	
 	# drop / throw
@@ -218,14 +234,16 @@ func drop(is_throw := false):
 	
 	pickup = null
 	is_grab = false
+	#is_ignore_end = true
+	print("drop")
 
-func set_ignore(body):
-	ignore = body
-	ignore.ignore = self
-	is_ignore_end = false
-
-func just_moved():
-	if is_ignore_end and is_instance_valid(ignore):
-		if !get_rect().intersects(ignore.get_rect()):
-			ignore.ignore = null
-			ignore = null
+#func set_ignore(body):
+#	ignore = body
+#	ignore.ignore = self
+#	is_ignore_end = false
+#
+#func just_moved():
+#	if is_ignore_end and is_instance_valid(ignore):
+#		if !get_rect().intersects(ignore.get_rect()):
+#			ignore.ignore = null
+#			ignore = null
