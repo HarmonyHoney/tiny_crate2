@@ -1,36 +1,33 @@
 tool
 extends Actor
 
+onready var sprite := $Sprite
+
 export var rise_gravity := 1000.0
 export var fall_gravity := 1000.0
 
-var last_floor := false
-export var floor_accel := 12.0
-var floor_clock := 0.0
-export var snap_time := 0.3
-
-var is_grab := false
 var grab_node = null
-var is_pickup_squish := false
-var pickup_ease := EaseMover.new(0.2)
-export var pickup_squish := Vector2.ONE * 0.8
-
-onready var sprite := $Sprite
+var grab_x := 1
+var is_grab := false
+var is_grab_squish := false
+var grab_ease := EaseMover.new(0.2)
+export var grab_speed := Vector2(16, 20)
+export var grab_squish := Vector2.ONE * 0.8
 
 var is_snap := false
 var snap_ease := EaseMover.new(0.2)
 var snap_from := Vector2.ZERO
-var grab_to := Vector2.ZERO
-export var snap_squish := Vector2.ONE * 0.7
+export var snap_squish := Vector2.ONE * 0.9
+
+var is_push := false
+var push_ease := EaseMover.new(0.1)
 
 export var is_sticky := false
 var is_stuck := false
 
 func _ready():
 	if Engine.editor_hint: return
-	#position = position.snapped(Vector2.ONE * 25)
 	
-	#UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "position")
 	
 	if is_sticky:
@@ -39,63 +36,44 @@ func _ready():
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
-	# pickup squish
-	if is_pickup_squish:
-		pickup_ease.count(delta)
+	# grab squish
+	if is_grab_squish:
+		grab_ease.count(delta)
 		
-		sprite.scale = pickup_squish.linear_interpolate(Vector2.ONE, pickup_ease.frac())
+		sprite.scale = grab_squish.linear_interpolate(Vector2.ONE, grab_ease.smooth())
 		
-		if pickup_ease.is_complete:
-			is_pickup_squish = false
-	# snap
-	if is_snap:
-		snap_ease.count(delta)
+		if grab_ease.is_complete:
+			is_grab_squish = false
+	
+	# snap or push
+	if is_snap or is_push:
+		var e = snap_ease if is_snap else push_ease
+		e.count(delta)
 		
-		sprite.position = snap_from.linear_interpolate(Vector2.ZERO, snap_ease.smooth())
-		sprite.scale = snap_squish.linear_interpolate(Vector2.ONE, snap_ease.smooth())
+		sprite.position = snap_from.linear_interpolate(Vector2.ZERO, e.smooth() if is_snap else e.frac())
+		if is_snap:
+			sprite.scale = snap_squish.linear_interpolate(Vector2.ONE, e.smooth())
 		
-		if snap_ease.is_complete:
+		if e.is_complete:
 			is_snap = false
+			is_push = false
+			is_floor = check_solid(position + Vector2(0, 1))
 	# grab
 	elif is_grab:
 		if is_instance_valid(grab_node) and grab_node.grab_ease.is_complete and (grab_node.position.y > position.y - size.y or (grab_node.is_floor and grab_node.get_actor("box", grab_node.position + Vector2(0, 1)) != self)):
-			var p = grab_node.position + Vector2(0, -125)
-			var li = position.linear_interpolate(p, 15 * delta).round()
-			var diff = li - position
-			move(diff)
+			var p = grab_node.position + Vector2(0, -120)
+			var li = Vector2(lerp(position.x, p.x, grab_speed.x * delta), lerp(position.y, p.y, grab_speed.y * delta))
+			move(li - position)
 	# sticky
 	elif is_stuck:
 		pass
 	# move
 	else:
-		# on floor
-		if is_floor:
-			# slow down
-			velocity.x = lerp(velocity.x, 0.0, floor_accel * delta)
-		
 		# gravity
 		velocity.y += (fall_gravity if velocity.y > 0.0 else rise_gravity) * delta
 		
 		# move
 		move(velocity * delta)
-
-func pickup(other):
-	is_grab = true
-	is_pickup_squish = true
-	pickup_ease.reset()
-	grab_node = other
-	grab_to = position
-	is_stuck = false
-
-func drop(_vel := Vector2.ZERO):
-	is_grab = false
-	is_floor = false
-	is_pickup_squish = true
-	pickup_ease.reset()
-	floor_clock = 0.0
-	
-	velocity = _vel
-	grab_node = null
 
 func just_moved():
 	if is_sticky and !is_grab and has_hit != Vector2.ZERO:
@@ -110,21 +88,60 @@ func hit_floor():
 	if !is_grab:
 		snap()
 
+func grab(other, dir_x):
+	grab_x = dir_x
+	is_grab = true
+	is_grab_squish = true
+	grab_ease.reset()
+	grab_node = other
+	is_stuck = false
+	print("grab: ", name)
+
+func drop(_vel := Vector2.ZERO):
+	is_grab = false
+	is_floor = false
+	is_grab_squish = true
+	grab_ease.reset()
+	
+	if grab_node.position.y > position.y + size.y:
+		velocity = _vel
+	
+	grab_node = null
+	print("drop: ", name, " pos: ", position)
+
 func snap(_pos := position, is_y := false):
 	var last_pos = position
-	if is_y:
-		position = Vector2(_pos.x, stepify(_pos.y, 25))
-	else:
-		position = Vector2(stepify(_pos.x, 25), _pos.y)
-	sprite.position = last_pos - position
-	snap_from = sprite.position
+	var p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 25) if is_y else _pos.y)
 	
-	velocity = Vector2.ZERO
-	is_snap = true
-	snap_ease.reset()
-	print(name, " snapped ", sprite.position, " to ", position)
+	if check_solid(p):
+		_pos += position - last_pos
+		p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 25) if is_y else _pos.y)
+	
+	if !check_solid(p):
+		position = p
+		sprite.position = last_pos - position
+		snap_from = sprite.position
+		
+		velocity = Vector2.ZERO
+		is_snap = true
+		snap_ease.reset()
+		print(name, " snapped ", sprite.position, " to ", position)
 
 func push(dir_x := 1.0):
-	var v = Vector2(dir_x * 25, 0)
-	if !check_solid(position + v):
-		snap(position + v)
+	if !is_push and is_floor:
+		var v = Vector2(dir_x * 25, 0)
+		
+		var pb = get_actor("box", position + Vector2(dir_x, 0))
+		if is_instance_valid(pb):
+			pb.push(dir_x)
+		
+		var cs = check_solid(position + v)
+		if !cs:
+			# bring above
+			for a in get_actors("box", position + Vector2(0, -1)):
+				a.push(dir_x)
+			
+			snap(position + v)
+			is_snap = false
+			is_push = true
+			push_ease.reset()

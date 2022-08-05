@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://src/shader/bg.gdshader" type="Shader" id=1]
+
+[sub_resource type="ShaderMaterial" id=1]
+shader = ExtResource( 1 )
+shader_param/radius = 0.333
+shader_param/size = Vector2( 1, 0.563 )
+shader_param/color_a = Color( 0.22, 0, 0.4, 1 )
+shader_param/color_b = Color( 0.44, 0, 0.6, 1 )
+shader_param/is_color_c = false
+shader_param/color_c = Color( 0, 0.156863, 1, 1 )
+shader_param/time_scale = 0.033
+shader_param/move = Vector2( 0.5, 0.5 )
+
+[node name="BG" type="CanvasLayer"]
+layer = -10
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource( 1 )
+margin_right = 1600.0
+margin_bottom = 900.0

@@ -23,9 +23,6 @@ is_moving = true
 is_solid = true
 is_colliding = true
 fall_gravity = 2000.0
-floor_accel = 7.0
-snap_time = 0.225
-snap_squish = Vector2( 0.9, 0.9 )
 
 [node name="Sprite" type="Node2D" parent="."]
 

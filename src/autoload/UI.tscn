@@ -95,6 +95,7 @@ align = 1
 valign = 1
 
 [node name="Debug" type="Control" parent="Control"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 4 )

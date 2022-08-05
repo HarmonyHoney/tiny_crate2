@@ -21,8 +21,7 @@ var has_hit := Vector2.ZERO
 
 # is on floor and air time
 var is_floor := false
-var is_floor_last := false
-var air_time := 0
+var air_frames := 0
 
 func _enter_tree():
 	Shared.actors.append(self)
@@ -68,9 +67,9 @@ func move(_vel := Vector2.ZERO):
 	# set floor
 	if has_moved.y: is_floor = has_hit.y == 1
 	if is_floor:
-		if air_time > 0: hit_floor()
-		air_time = 0
-	else: air_time += 1
+		if air_frames > 0: hit_floor()
+		air_frames = 0
+	else: air_frames += 1
 	
 	# last pos
 	last_move = position - last_move
@@ -106,7 +105,7 @@ func just_moved():
 
 # call when hitting floor
 func hit_floor():
-	print(name, ".air_time: ", air_time)
+	print(name, ".air_frames: ", air_frames)
 	pass
 
 # check area for solid tiles and actors
@@ -116,8 +115,6 @@ func check_solid(_pos = position, _size = size):
 	return check_solid_actor(_pos, _size)
 
 func check_solid_tilemap(_pos := position, _size = size):
-	var corners = [Vector2(-1,-1), Vector2(1,-1), Vector2(1,1), Vector2(-1,1)]
-	
 	for i in Shared.solid_maps:
 		var tl = i.world_to_map(_pos - (Vector2.ONE * _size))
 		
