@@ -9,20 +9,20 @@ border_width_top = 12
 border_width_right = 12
 border_width_bottom = 12
 border_color = Color( 0.741176, 0.423529, 0.2, 1 )
-corner_radius_top_left = 22
-corner_radius_top_right = 22
-corner_radius_bottom_right = 22
-corner_radius_bottom_left = 22
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [node name="Box" type="Node2D" groups=["box"]]
 z_index = 5
 z_as_relative = false
 script = ExtResource( 2 )
-is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true
 fall_gravity = 2000.0
+grab_speed = Vector2( 20, 20 )
 
 [node name="Sprite" type="Node2D" parent="."]
 

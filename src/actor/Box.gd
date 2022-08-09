@@ -6,7 +6,7 @@ onready var sprite := $Sprite
 export var rise_gravity := 1000.0
 export var fall_gravity := 1000.0
 
-var grab_node = null
+var grab = null
 var grab_x := 1
 var is_grab := false
 var is_grab_squish := false
@@ -60,8 +60,9 @@ func _physics_process(delta):
 			is_floor = check_solid(position + Vector2(0, 1))
 	# grab
 	elif is_grab:
-		if is_instance_valid(grab_node) and grab_node.grab_ease.is_complete and (grab_node.position.y > position.y - size.y or (grab_node.is_floor and grab_node.get_actor("box", grab_node.position + Vector2(0, 1)) != self)):
-			var p = grab_node.position + Vector2(0, -120)
+		if is_instance_valid(grab) and grab.grab_ease.is_complete and (grab.position.y > position.y - size.y or (grab.is_floor and grab.get_actor("box", grab.position + Vector2(0, 1)) != self)):
+			#var p = grab.position + Vector2(0, -120)
+			var p = grab.grab_node.global_position
 			var li = Vector2(lerp(position.x, p.x, grab_speed.x * delta), lerp(position.y, p.y, grab_speed.y * delta))
 			move(li - position)
 	# sticky
@@ -93,7 +94,7 @@ func grab(other, dir_x):
 	is_grab = true
 	is_grab_squish = true
 	grab_ease.reset()
-	grab_node = other
+	grab = other
 	is_stuck = false
 	print("grab: ", name)
 
@@ -103,10 +104,10 @@ func drop(_vel := Vector2.ZERO):
 	is_grab_squish = true
 	grab_ease.reset()
 	
-	if grab_node.position.y > position.y + size.y:
+	if grab.position.y > position.y + size.y:
 		velocity = _vel
 	
-	grab_node = null
+	grab = null
 	print("drop: ", name, " pos: ", position)
 
 func snap(_pos := position, is_y := false):

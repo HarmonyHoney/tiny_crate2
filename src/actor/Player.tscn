@@ -86,3 +86,6 @@ points = PoolVector2Array( 0, 0, 0, 15 )
 width = 23.0
 width_curve = SubResource( 4 )
 default_color = Color( 1, 1, 1, 1 )
+
+[node name="Grab" type="Node2D" parent="."]
+position = Vector2( 0, -120 )

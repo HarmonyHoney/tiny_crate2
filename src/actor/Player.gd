@@ -43,6 +43,13 @@ var grab_ease := EaseMover.new(0.15)
 export var grab_length := 200.0
 export var throw_vel := Vector2(350, -500)
 export var drop_vel := Vector2(0, -100)
+var is_lift := false
+onready var grab_node := $Grab
+export var lift_pos := Vector2(0, -120)
+export var down_pos := Vector2(100, -20)
+var lift_from := lift_pos
+var lift_to := lift_pos
+var lift_ease := EaseMover.new(0.3)
 
 onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
@@ -138,6 +145,25 @@ func _physics_process(delta):
 		else:
 			drop(joy.y != 1)
 	
+	if is_grab:
+		# arms
+		grab_ease.count(delta)
+		var d = position.distance_to(grab.position)
+		if d > grab_length:
+			drop()
+		
+		# lift
+		if lift_ease.clock == 0 and joy.y == 1:
+			lift_to = down_pos * Vector2(dir_x, 1)
+		
+		lift_ease.count(delta, joy.y == 1)
+		
+		grab_node.position = lift_from.linear_interpolate(lift_to, lift_ease.smooth())
+		
+	else:
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
+	
 	# push
 	if is_push:
 		if joy.x == 0 or wall_clock > push_timeout:
@@ -160,17 +186,6 @@ func _physics_process(delta):
 			if d.scene_path != "":
 				get_tree().change_scene(d.scene_path)
 	
-	# arms
-	if is_grab:
-		grab_ease.count(delta)
-		
-		var d = position.distance_to(grab.position)
-		if d > grab_length:
-			drop()
-	else:
-		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
-		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
-	
 	# body
 	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0
 	
@@ -188,8 +203,8 @@ func _physics_process(delta):
 func idle_frame():
 	# grab
 	if is_grab and is_instance_valid(grab):
-		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + Vector2(-50, 50)), grab_ease.frac()))
-		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(50, 50)), grab_ease.frac()))
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + Vector2(-47, 47)), grab_ease.frac()))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(47, 47)), grab_ease.frac()))
 
 func hit_floor():
 	jump_count = 0
@@ -232,6 +247,7 @@ func grab():
 		grab.grab(self, joy.x)
 		is_grab = true
 		grab_ease.reset()
+		lift_ease.reset()
 
 # drop / throw
 func drop(is_throw := false):

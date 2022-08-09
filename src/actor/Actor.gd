@@ -24,9 +24,13 @@ var is_floor := false
 var air_frames := 0
 
 func _enter_tree():
+	if Engine.editor_hint: return
+	
 	Shared.actors.append(self)
 
 func _exit_tree():
+	if Engine.editor_hint: return
+	
 	Shared.actors.erase(self)
 
 func _draw():
