@@ -33,7 +33,7 @@ _global_script_class_icons={
 [application]
 
 config/name="new1"
-run/main_scene="res://src/map/map0.tscn"
+run/main_scene="res://src/map/hub.tscn"
 config/icon="res://media/image/box_icon.png"
 
 [autoload]
@@ -41,6 +41,7 @@ config/icon="res://media/image/box_icon.png"
 UI="*res://src/autoload/UI.tscn"
 Shared="*res://src/autoload/Shared.gd"
 BG="*res://src/autoload/BG.tscn"
+Cam="*res://src/autoload/Cam.tscn"
 
 [display]
 

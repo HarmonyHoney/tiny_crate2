@@ -5,7 +5,7 @@
 [sub_resource type="Curve" id=4]
 _data = [ Vector2( 0, 0.436364 ), 0.0, 0.563636, 0, 1, Vector2( 1, 1 ), 0.563636, 0.0, 1, 0 ]
 
-[node name="Player" type="Node2D"]
+[node name="Player" type="Node2D" groups=["player"]]
 z_index = 10
 z_as_relative = false
 script = ExtResource( 2 )

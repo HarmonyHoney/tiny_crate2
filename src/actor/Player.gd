@@ -60,6 +60,12 @@ var bullet_scene = preload("res://src/actor/Bullet.tscn")
 var fire_clock := 0.0
 export var fire_rate := 0.25
 
+func _enter_tree():
+	Shared.player = self
+
+func _exit_tree():
+	Shared.player = null
+
 func _ready():
 	if Engine.editor_hint: return
 	
@@ -71,8 +77,16 @@ func _ready():
 	UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "is_jump")
 	UI.debug.track(self, "is_push")
+	UI.debug.track(self, "joy")
 	
 	get_tree().connect("idle_frame", self, "idle_frame")
+	
+	Cam.follow(self)
+	
+	# snap to floor
+	if check_solid(position + Vector2(0, 50)):
+		move(Vector2(0, 50))
+	
 
 func _input(event):
 	if Engine.editor_hint: return
@@ -178,13 +192,6 @@ func _physics_process(delta):
 		if push_ease.is_complete:
 			push_ease.reset()
 			is_push = true
-	
-	# open door
-	if joy.y == -1 and joy_last.y != -1:
-		var d = get_actor("door")
-		if is_instance_valid(d):
-			if d.scene_path != "":
-				get_tree().change_scene(d.scene_path)
 	
 	# body
 	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0
