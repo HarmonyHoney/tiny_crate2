@@ -1,5 +1,6 @@
 tool
 extends Actor
+class_name Box
 
 onready var sprite := $Sprite
 

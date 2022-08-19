@@ -7,19 +7,25 @@
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
-shader_param/width = 0.25
+shader_param/width = 0.39
 
 [node name="Goal" type="Node2D"]
+z_index = 9
 script = ExtResource( 1 )
 size = Vector2( 25, 25 )
+x_offset = 70.0
+offset = Vector2( 70, -15 )
 
 [node name="Image" type="Node2D" parent="."]
 
 [node name="Light" type="Sprite" parent="Image"]
-modulate = Color( 1, 0.984314, 0.909804, 0.792157 )
+modulate = Color( 1, 0.8, 0.8, 1 )
 material = SubResource( 1 )
+scale = Vector2( 2, 2 )
 texture = ExtResource( 3 )
 script = ExtResource( 2 )
+time_scale = 2.0
+sin_scale = 0.2
 
 [node name="Polygon2D" type="Polygon2D" parent="Image"]
 scale = Vector2( 0.7, 0.7 )

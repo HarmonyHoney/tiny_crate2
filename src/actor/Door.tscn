@@ -13,7 +13,6 @@ shader_param/fill_y = 0.5
 [node name="Door" type="Node2D" groups=["door"]]
 script = ExtResource( 2 )
 size = Vector2( 40, 40 )
-is_draw_size = true
 
 [node name="Door" type="Sprite" parent="."]
 texture = ExtResource( 1 )

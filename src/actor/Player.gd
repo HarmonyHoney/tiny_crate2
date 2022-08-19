@@ -55,6 +55,7 @@ onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
 onready var image := $Image
 var walk_clock := 0.0
+onready var hat := $Image/Head/Hat
 
 var bullet_scene = preload("res://src/actor/Bullet.tscn")
 var fire_clock := 0.0
@@ -83,6 +84,10 @@ func _ready():
 	
 	Cam.follow(self)
 	
+	# door in
+	if is_instance_valid(Shared.door_in):
+		global_position = Shared.door_in.global_position
+	
 	# snap to floor
 	if check_solid(position + Vector2(0, 50)):
 		move(Vector2(0, 50))
@@ -92,7 +97,7 @@ func _input(event):
 	if Engine.editor_hint: return
 	
 	if event is InputEventKey and event.is_pressed() and !event.is_echo() and event.scancode == KEY_R:
-		get_tree().reload_current_scene()
+		Shared.reset()
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
@@ -111,6 +116,9 @@ func _physics_process(delta):
 	# dir x
 	if joy.x != 0:
 		dir_x = joy.x
+		hat.scale.x = dir_x
+		#arm_l.z_index = -10 if dir_x < 0 else 0
+		#arm_r.z_index = -10 if dir_x > 0 else 0
 	
 	# start jump
 	if btn_jump and jump_count == 0 and air_clock < coyote_time and holding_jump < holding_limit:

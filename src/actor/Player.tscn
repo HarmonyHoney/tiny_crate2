@@ -1,6 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://src/actor/Player.gd" type="Script" id=2]
+
+[sub_resource type="CanvasItemMaterial" id=5]
+blend_mode = 1
 
 [sub_resource type="Curve" id=4]
 _data = [ Vector2( 0, 0.436364 ), 0.0, 0.563636, 0, 1, Vector2( 1, 1 ), 0.563636, 0.0, 1, 0 ]
@@ -10,7 +13,6 @@ z_index = 10
 z_as_relative = false
 script = ExtResource( 2 )
 size = Vector2( 20, 30 )
-is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true
@@ -19,14 +21,14 @@ is_colliding = true
 
 [node name="ArmL" type="Line2D" parent="Image"]
 points = PoolVector2Array( -10, 10, -30, 0 )
-default_color = Color( 1, 1, 1, 1 )
+default_color = Color( 1, 0.45, 0.45, 1 )
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="ArmR" type="Line2D" parent="Image"]
 points = PoolVector2Array( 10, 10, 30, 0 )
-default_color = Color( 1, 1, 1, 1 )
+default_color = Color( 1, 0.45, 0.45, 1 )
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
@@ -58,6 +60,34 @@ joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
+[node name="Hat" type="Node2D" parent="Image/Head"]
+position = Vector2( 0, -20 )
+
+[node name="Polygon2D" type="Polygon2D" parent="Image/Head/Hat"]
+color = Color( 1, 0.933333, 0, 1 )
+polygon = PoolVector2Array( -25, 10, -10, -10, 10, -10, 25, 10 )
+
+[node name="Line2D" type="Line2D" parent="Image/Head/Hat"]
+points = PoolVector2Array( 0, 0, 0.001, 0.001 )
+width = 12.0
+default_color = Color( 0.51, 0, 0, 1 )
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Line2D2" type="Line2D" parent="Image/Head/Hat"]
+position = Vector2( 2, 0 )
+points = PoolVector2Array( 0, 0, 0.001, 0.001 )
+width = 9.0
+default_color = Color( 1, 1, 1, 1 )
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="Light" type="Polygon2D" parent="Image/Head/Hat"]
+visible = false
+material = SubResource( 5 )
+color = Color( 1, 1, 1, 0.247059 )
+polygon = PoolVector2Array( 0, 0, 1500, -500, 1500, 500, 0, 0 )
+
 [node name="Body" type="Node2D" parent="Image"]
 position = Vector2( 0, 4.5 )
 
@@ -66,7 +96,7 @@ position = Vector2( -5, 4.825 )
 rotation = 0.392699
 points = PoolVector2Array( 0, 0, 0, 17.011 )
 width = 9.642
-default_color = Color( 1, 1, 1, 1 )
+default_color = Color( 1, 0.45, 0.45, 1 )
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
@@ -76,7 +106,7 @@ position = Vector2( 5, 4.825 )
 rotation = -0.392699
 points = PoolVector2Array( 0, 0, 0, 17.011 )
 width = 9.642
-default_color = Color( 1, 1, 1, 1 )
+default_color = Color( 1, 0.45, 0.45, 1 )
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
@@ -85,7 +115,7 @@ end_cap_mode = 2
 points = PoolVector2Array( 0, 0, 0, 15 )
 width = 23.0
 width_curve = SubResource( 4 )
-default_color = Color( 1, 1, 1, 1 )
+default_color = Color( 1, 0.45, 0.45, 1 )
 
 [node name="Grab" type="Node2D" parent="."]
 position = Vector2( 0, -120 )

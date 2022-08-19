@@ -1,25 +1,66 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://src/shader/bg.gdshader" type="Shader" id=1]
 [ext_resource path="res://src/autoload/BG.gd" type="Script" id=2]
 
+[sub_resource type="Shader" id=2]
+code = "shader_type canvas_item;
+
+uniform float radius : hint_range(0.0, 0.5) = 0.2;
+uniform vec2 size = vec2(16, 9);
+uniform float scale = 1.0;
+
+uniform vec4 color_a : hint_color = vec4(1);
+uniform vec4 color_b : hint_color = vec4(vec3(0.5), 1.0);
+uniform bool is_color_c = false;
+uniform vec4 color_c : hint_color = vec4(0.0);
+
+//uniform float time_scale : hint_range(0.0, 0.2) = 0.1;
+//uniform vec2 move = vec2(1.0);
+
+uniform vec2 offset = vec2(0.0);
+
+void fragment(){
+	vec2 m = (UV + offset) * size * scale;
+	vec2 uv = mod(m, 1);
+	
+	vec4 c = color_a;
+	vec2 s = sign(uv - vec2(0.5));
+	
+	// checker
+	if (int(ceil(m.x) + ceil(m.y)) % 2 > 0){
+		c = color_b;
+	}
+	
+	bool is_corner = distance(uv, round(uv)) < radius;
+	bool is_circle = distance(uv, round(uv) - (vec2(radius) * s)) < radius;
+	
+	if (is_corner && !is_circle){
+		c = is_color_c ? color_c : color_b;
+	}
+	
+	COLOR = c;
+}"
+
 [sub_resource type="ShaderMaterial" id=1]
-shader = ExtResource( 1 )
+shader = SubResource( 2 )
 shader_param/radius = 0.333
 shader_param/size = Vector2( 16, 9 )
 shader_param/scale = 0.5
-shader_param/color_a = Color( 0.09, 0.09, 0.09, 1 )
-shader_param/color_b = Color( 0, 0, 0, 1 )
-shader_param/is_color_c = true
+shader_param/color_a = Color( 0.48, 0.896, 1, 1 )
+shader_param/color_b = Color( 0, 0.8, 1, 1 )
+shader_param/is_color_c = false
 shader_param/color_c = Color( 0.0392157, 0.0392157, 0.0392157, 1 )
 shader_param/offset = Vector2( 0, 0 )
 
 [node name="BG" type="CanvasLayer"]
 layer = -10
+visible = false
+follow_viewport_enable = true
 script = ExtResource( 2 )
 parallax_scale = 1.3
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 material = SubResource( 1 )
 margin_right = 1600.0
 margin_bottom = 900.0

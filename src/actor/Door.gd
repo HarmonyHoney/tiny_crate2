@@ -1,5 +1,6 @@
 tool
 extends Actor
+class_name Door
 
 export (String, FILE) var scene_path := ""
 
@@ -11,6 +12,10 @@ var fade_ease := EaseMover.new(0.3)
 var open_ease := EaseMover.new(0.5)
 
 onready var arrow := $Arrow
+
+func _enter_tree():
+	if scene_path != "" and scene_path == Shared.last_scene:
+		Shared.door_in = self
 
 func _ready():
 	if Engine.editor_hint: return
