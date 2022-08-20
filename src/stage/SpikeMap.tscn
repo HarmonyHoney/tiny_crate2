@@ -20,6 +20,7 @@
 
 [node name="SpikeMap" type="TileMap"]
 modulate = Color( 1, 0.960784, 0.960784, 1 )
+z_index = -5
 tile_set = SubResource( 4 )
 cell_size = Vector2( 100, 100 )
 cell_custom_transform = Transform2D( 100, 0, 0, 100, 0, 0 )
