@@ -61,6 +61,11 @@ var bullet_scene = preload("res://src/actor/Bullet.tscn")
 var fire_clock := 0.0
 export var fire_rate := 0.25
 
+onready var squish_ease := EaseMover.new(0.4)
+export var jump_squish := Vector2.ONE
+export var land_squish := Vector2.ONE
+
+
 func _enter_tree():
 	Shared.player = self
 
@@ -126,6 +131,7 @@ func _physics_process(delta):
 		is_jump = true
 		jump_clock = 0.0
 		jump_count += 1
+		squish(jump_squish)
 	# in air
 	elif !is_floor:
 		
@@ -214,6 +220,11 @@ func _physics_process(delta):
 	else:
 		image.rotation_degrees = (dir_x * 7) + sin(walk_clock * 9.0) * 3
 		image.position.y = lerp(image.position.y, 0, 10 * delta)
+	
+	# squash n stretch
+	if squish_ease.clock < squish_ease.time:
+		squish_ease.count(delta)
+		image.scale = squish_ease.from.linear_interpolate(Vector2.ONE, squish_ease.frac())
 
 func idle_frame():
 	# grab
@@ -221,8 +232,14 @@ func idle_frame():
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + Vector2(-47, 47)), grab_ease.frac()))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(47, 47)), grab_ease.frac()))
 
+func squish(_from := Vector2.ONE, _time := squish_ease.time):
+	squish_ease.time = _time
+	squish_ease.reset()
+	squish_ease.from = _from
+
 func hit_floor():
 	jump_count = 0
+	squish(land_squish)
 
 func set_jump(arg := false):
 	set_jump = arg

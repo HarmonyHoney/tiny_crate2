@@ -16,6 +16,8 @@ size = Vector2( 20, 30 )
 is_moving = true
 is_solid = true
 is_colliding = true
+jump_squish = Vector2( 0.5, 1.5 )
+land_squish = Vector2( 1.3, 0.7 )
 
 [node name="Image" type="Node2D" parent="."]
 

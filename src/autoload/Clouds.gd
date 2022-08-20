@@ -2,6 +2,7 @@ extends Node2D
 
 export var wind_speed := 1.0
 export var wind_dir := 1.0
+var wind_dist := 0.0
 export var puff_range := Vector2(0.5, 1.5)
 export var clouds_per_thousand := 25
 
@@ -22,11 +23,10 @@ func _input(event):
 		clear()
 
 func _physics_process(delta):
-	#list_node.offset += Vector2(wind_speed * wind_dir * delta, 0)
-	pass
+	wind_dist += wind_speed * wind_dir * delta
 
 func idle_frame():
-	list_node.offset = Cam.position * parallax_scale
+	list_node.offset = (Cam.position * parallax_scale) + Vector2(wind_dist, 0)
 
 func clear():
 	list_node.offset = Vector2.ZERO
