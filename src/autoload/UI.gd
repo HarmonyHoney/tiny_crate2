@@ -1,8 +1,12 @@
 extends CanvasLayer
 
-onready var pause_menu := $Control/PauseMenu
-
 onready var debug := $Control/Debug
 
+onready var gems := $Control/Gems
+onready var gems_label := $Control/Gems/Label
+
 func _ready():
-	pause_menu.visible = false
+	for i in $Control.get_children():
+		i.visible = false
+	
+	gems.visible = true

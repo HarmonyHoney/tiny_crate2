@@ -1,13 +1,7 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://src/actor/Goal.gd" type="Script" id=1]
-[ext_resource path="res://src/actor/Light.gd" type="Script" id=2]
-[ext_resource path="res://media/image/white_square_100x.png" type="Texture" id=3]
-[ext_resource path="res://src/shader/circle_fade.gdshader" type="Shader" id=4]
-
-[sub_resource type="ShaderMaterial" id=1]
-shader = ExtResource( 4 )
-shader_param/width = 0.39
+[ext_resource path="res://src/actor/goal_image.tscn" type="PackedScene" id=2]
 
 [node name="Goal" type="Node2D"]
 z_index = 9
@@ -16,18 +10,6 @@ size = Vector2( 25, 25 )
 x_offset = 70.0
 offset = Vector2( 70, -15 )
 
-[node name="Image" type="Node2D" parent="."]
+[node name="Image" parent="." instance=ExtResource( 2 )]
 
-[node name="Light" type="Sprite" parent="Image"]
-modulate = Color( 1, 0.8, 0.8, 1 )
-material = SubResource( 1 )
-scale = Vector2( 2, 2 )
-texture = ExtResource( 3 )
-script = ExtResource( 2 )
-time_scale = 2.0
-sin_scale = 0.2
-
-[node name="Polygon2D" type="Polygon2D" parent="Image"]
-scale = Vector2( 0.7, 0.7 )
-color = Color( 1, 1, 0, 1 )
-polygon = PoolVector2Array( 0, -50, 15, -15, 50, 0, 15, 15, 0, 50, -15, 15, -50, 0, -15, -15 )
+[editable path="Image"]

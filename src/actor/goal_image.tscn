@@ -1,0 +1,27 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://src/actor/Light.gd" type="Script" id=1]
+[ext_resource path="res://media/image/white_square_100x.png" type="Texture" id=2]
+[ext_resource path="res://src/shader/circle_fade.gdshader" type="Shader" id=3]
+[ext_resource path="res://src/actor/goal_image.gd" type="Script" id=4]
+
+[sub_resource type="ShaderMaterial" id=1]
+shader = ExtResource( 3 )
+shader_param/width = 0.39
+
+[node name="Image" type="Node2D"]
+script = ExtResource( 4 )
+
+[node name="Light" type="Sprite" parent="."]
+modulate = Color( 1, 0.8, 0.8, 1 )
+material = SubResource( 1 )
+scale = Vector2( 2, 2 )
+texture = ExtResource( 2 )
+script = ExtResource( 1 )
+time_scale = 2.0
+sin_scale = 0.2
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+scale = Vector2( 0.7, 0.7 )
+color = Color( 1, 1, 0, 1 )
+polygon = PoolVector2Array( 0, -50, 15, -15, 50, 0, 15, 15, 0, 50, -15, 15, -50, 0, -15, -15 )

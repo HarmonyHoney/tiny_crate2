@@ -1,9 +1,6 @@
 tool
 extends Actor
 
-onready var dir = 1 if randf() > 0.5 else -1
-var turn_speed := 60.0
-
 onready var image := $Image
 onready var player = Shared.player
 
@@ -14,10 +11,16 @@ var close_frac := 0.5
 export var x_offset := 60.0
 export var offset := Vector2(70, -10)
 
-func _physics_process(delta):
+func _ready():
 	if Engine.editor_hint: return
 	
-	image.rotate(deg2rad(turn_speed * dir * delta))
+	Shared.connect("scene_before", self, "scene_before")
+	
+	if Shared.goals.has(Shared.current_scene + "/" + name):
+		image.collect()
+
+func _physics_process(delta):
+	if Engine.editor_hint: return
 	
 	if is_instance_valid(player):
 		if is_follow:
@@ -26,3 +29,8 @@ func _physics_process(delta):
 			position = position.linear_interpolate(v, spd * delta)
 		elif get_rect().intersects(player.get_rect()):
 			is_follow = true
+
+func scene_before():
+	if is_follow:
+		print(name, " collected")
+		Shared.goal_grab(name)

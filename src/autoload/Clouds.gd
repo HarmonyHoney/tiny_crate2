@@ -16,6 +16,7 @@ func _ready():
 	$Puff.visible = false
 	fill()
 	get_tree().connect("idle_frame", self, "idle_frame")
+	Shared.connect("scene_after", self, "clear")
 
 func _input(event):
 	if event is InputEventKey and event.scancode == KEY_P and event.is_pressed() and !event.is_echo():

@@ -171,7 +171,7 @@ func _physics_process(delta):
 		if grab == null:
 			grab()
 		else:
-			drop(joy.y != 1)
+			drop(joy.x != 0)
 	
 	if is_grab:
 		# arms

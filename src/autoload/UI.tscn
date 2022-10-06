@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://icon.png" type="Texture" id=1]
 [ext_resource path="res://media/font/mini-wakuwaku.otf" type="DynamicFontData" id=2]
 [ext_resource path="res://src/autoload/UI.gd" type="Script" id=3]
 [ext_resource path="res://src/autoload/UI_Debug.gd" type="Script" id=4]
+[ext_resource path="res://src/actor/goal_image.tscn" type="PackedScene" id=5]
+[ext_resource path="res://src/class/ease_pan.gd" type="Script" id=6]
 
 [sub_resource type="DynamicFont" id=2]
 size = 100
@@ -17,12 +19,25 @@ use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 2 )
 
+[sub_resource type="DynamicFont" id=3]
+size = 50
+outline_size = 3
+outline_color = Color( 0, 0, 0, 1 )
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 2 )
+
 [node name="UI" type="CanvasLayer"]
 script = ExtResource( 3 )
 
 [node name="Control" type="Control" parent="."]
 margin_right = 1600.0
 margin_bottom = 900.0
+
+[node name="BG" type="ColorRect" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0.33 )
 
 [node name="Reticle" type="CenterContainer" parent="Control"]
 visible = false
@@ -51,8 +66,8 @@ margin_right = 40.0
 margin_bottom = 40.0
 
 [node name="Label" type="Label" parent="Control/PauseMenu"]
-margin_left = 174.0
-margin_right = 537.0
+margin_left = 118.0
+margin_right = 481.0
 margin_bottom = 200.0
 rect_min_size = Vector2( 0, 200 )
 size_flags_horizontal = 4
@@ -62,10 +77,10 @@ align = 1
 valign = 1
 
 [node name="Label2" type="Label" parent="Control/PauseMenu"]
-margin_left = 262.0
+margin_left = 244.0
 margin_top = 204.0
-margin_right = 449.0
-margin_bottom = 255.0
+margin_right = 355.0
+margin_bottom = 235.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
 text = "Resume"
@@ -73,10 +88,10 @@ align = 1
 valign = 1
 
 [node name="Label3" type="Label" parent="Control/PauseMenu"]
-margin_left = 255.0
-margin_top = 259.0
-margin_right = 456.0
-margin_bottom = 310.0
+margin_left = 240.0
+margin_top = 239.0
+margin_right = 360.0
+margin_bottom = 270.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
 text = "Options"
@@ -85,9 +100,9 @@ valign = 1
 
 [node name="Label4" type="Label" parent="Control/PauseMenu"]
 margin_left = 215.0
-margin_top = 314.0
-margin_right = 497.0
-margin_bottom = 365.0
+margin_top = 274.0
+margin_right = 384.0
+margin_bottom = 305.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
 text = "Main Menu"
@@ -109,3 +124,38 @@ size_flags_horizontal = 2
 size_flags_vertical = 2
 custom_fonts/font = SubResource( 1 )
 text = "is_floor: false"
+
+[node name="Gems" type="HBoxContainer" parent="Control"]
+margin_right = 1600.0
+margin_bottom = 100.0
+alignment = 1
+script = ExtResource( 6 )
+hide_offset = Vector2( 0, -100 )
+is_hide = true
+hide_curve = 2.5
+scale_path = NodePath("Control/Image")
+scale_range = Vector2( 1, 0 )
+
+[node name="Control" type="Control" parent="Control/Gems"]
+margin_left = 730.0
+margin_right = 830.0
+margin_bottom = 100.0
+rect_min_size = Vector2( 100, 100 )
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Image" parent="Control/Gems/Control" instance=ExtResource( 5 )]
+position = Vector2( 50, 50 )
+
+[node name="Label" type="Label" parent="Control/Gems"]
+margin_left = 834.0
+margin_top = 24.0
+margin_right = 869.0
+margin_bottom = 75.0
+size_flags_horizontal = 4
+custom_fonts/font = SubResource( 3 )
+text = "0"
+align = 1
+valign = 1
+
+[editable path="Control/Gems/Control/Image"]

@@ -5,6 +5,7 @@ class_name Door
 export (String, FILE) var scene_path := ""
 
 var player
+var is_active_last := true
 var is_active := false
 
 var delay_ease := EaseMover.new(0.4)
@@ -14,6 +15,8 @@ var open_ease := EaseMover.new(0.5)
 onready var arrow := $Arrow
 
 func _enter_tree():
+	if Engine.editor_hint: return
+	
 	if scene_path != "" and scene_path == Shared.last_scene:
 		Shared.door_in = self
 
@@ -30,6 +33,11 @@ func _physics_process(delta):
 		delay_ease.count(delta)
 	else:
 		is_active = get_rect().intersects(player.get_rect()) and scene_path != ""
+		if is_active != is_active_last:
+			pass#UI.gems.is_hide = !is_active
+			
+		is_active_last = is_active
+		
 		open_ease.count(delta, is_active and player.joy.y == -1)
 	
 	arrow.modulate.a = fade_ease.count(delta, is_active)
