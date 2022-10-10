@@ -9,6 +9,7 @@ var dir_x := 1
 
 var joy := Vector2.ZERO
 var joy_last := Vector2.ZERO
+var joy_clock := Vector2.ZERO
 var btnp_jump := false
 var btn_jump := false
 var btnp_shoot := false
@@ -43,6 +44,7 @@ var grab_ease := EaseMover.new(0.15)
 export var grab_length := 200.0
 export var throw_vel := Vector2(350, -500)
 export var drop_vel := Vector2(0, -100)
+export var drop_time := 0.1
 var is_lift := false
 onready var grab_node := $Grab
 export var lift_pos := Vector2(0, -120)
@@ -67,9 +69,11 @@ export var land_squish := Vector2.ONE
 
 
 func _enter_tree():
+	if Engine.editor_hint: return
 	Shared.player = self
 
 func _exit_tree():
+	if Engine.editor_hint: return
 	Shared.player = null
 
 func _ready():
@@ -84,6 +88,9 @@ func _ready():
 	UI.debug.track(self, "is_jump")
 	UI.debug.track(self, "is_push")
 	UI.debug.track(self, "joy")
+	UI.debug.track(self, "joy_last")
+	#UI.debug.track(self, "joy_clock")
+	UI.debug.track(self, "dir_x")
 	
 	get_tree().connect("idle_frame", self, "idle_frame")
 	
@@ -110,6 +117,9 @@ func _physics_process(delta):
 	# input
 	joy_last = joy
 	joy = Input.get_vector("left", "right", "up", "down").round()
+	joy_clock.x = joy_clock.x + delta if joy.x == 0 else 0
+	joy_clock.y = joy_clock.y + delta if joy.y == 0 else 0
+	
 	btnp_jump = Input.is_action_just_pressed("jump")
 	btn_jump = Input.is_action_pressed("jump")
 	holding_jump = holding_jump + delta if btn_jump else 0.0
@@ -171,7 +181,7 @@ func _physics_process(delta):
 		if grab == null:
 			grab()
 		else:
-			drop(joy.x != 0)
+			drop(joy_clock.x < drop_time)
 	
 	if is_grab:
 		# arms

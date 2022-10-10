@@ -13,6 +13,8 @@ var fade_ease := EaseMover.new(0.3)
 var open_ease := EaseMover.new(0.5)
 
 onready var arrow := $Arrow
+onready var window := $Window
+onready var knob := $Knob
 
 func _enter_tree():
 	if Engine.editor_hint: return
@@ -25,6 +27,14 @@ func _ready():
 	
 	player = Shared.player
 	UI.debug.track(self, "is_active")
+	
+	if scene_path == "":
+		knob.modulate = Color.from_hsv(0.0, 0.3, 0.6, 1.0)
+		window.modulate = knob.modulate
+	elif "hub" in scene_path:
+		window.visible = false
+	elif Shared.goals.has(scene_path + "/Goal"):
+		window.modulate = Color("FFFF33")
 
 func _physics_process(delta):
 	if Engine.editor_hint: return

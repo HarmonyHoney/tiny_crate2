@@ -11,6 +11,7 @@ var last_scene := ""
 var door_in
 #var door_out
 
+signal scene_reset
 signal scene_before
 signal scene_after
 
@@ -18,7 +19,7 @@ var goals := []
 
 func change_scene(_path := ""):
 	if _path != "":
-		emit_signal("scene_before")
+		emit_signal("scene_reset" if _path == current_scene else "scene_before")
 		if _path != current_scene:
 			last_scene = current_scene
 			current_scene = _path
