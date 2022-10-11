@@ -67,6 +67,12 @@ onready var squish_ease := EaseMover.new(0.4)
 export var jump_squish := Vector2.ONE
 export var land_squish := Vector2.ONE
 
+export(float, EASE) var curve_x := 0.5
+export(float, EASE) var curve_y := 0.5
+
+export var pre_a := Vector2.ZERO
+export var post_b := Vector2.ZERO
+
 
 func _enter_tree():
 	if Engine.editor_hint: return
@@ -103,7 +109,6 @@ func _ready():
 	# snap to floor
 	if check_solid(position + Vector2(0, 50)):
 		move(Vector2(0, 50))
-	
 
 func _input(event):
 	if Engine.editor_hint: return
@@ -196,7 +201,10 @@ func _physics_process(delta):
 		
 		lift_ease.count(delta, joy.y == 1)
 		
-		grab_node.position = lift_from.linear_interpolate(lift_to, lift_ease.smooth())
+		grab_node.position.x = lerp(lift_from.x, lift_to.x, ease(lift_ease.frac(), curve_x))
+		grab_node.position.y = lerp(lift_from.y, lift_to.y, ease(lift_ease.frac(), curve_y))
+#		grab_node.position = lift_from.linear_interpolate(lift_to, ease(lift_ease.frac(), curve_x))
+#		grab_node.position = lift_from.cubic_interpolate(lift_to, pre_a, post_b, lift_ease.frac())
 		
 	else:
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))

@@ -18,6 +18,9 @@ is_solid = true
 is_colliding = true
 jump_squish = Vector2( 0.5, 1.5 )
 land_squish = Vector2( 1.3, 0.7 )
+curve_x = 0.35
+curve_y = -1.6521
+pre_a = Vector2( 0, 5 )
 
 [node name="Image" type="Node2D" parent="."]
 
