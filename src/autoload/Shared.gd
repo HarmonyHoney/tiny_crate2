@@ -12,20 +12,25 @@ var last_scene := ""
 var door_in
 #var door_out
 
-signal scene_reset
-signal scene_before
-signal scene_after
+
+signal scene_before(is_reset)
+signal scene_after(is_reset)
+var is_reset := false
 
 var goals := []
 
-func change_scene(_path := ""):
+func _ready():
+	Wipe.connect("complete", self, "change_scene")
+
+func change_scene(_path := current_scene):
 	if _path != "":
-		emit_signal("scene_reset" if _path == current_scene else "scene_before")
+		is_reset = _path == current_scene
+		emit_signal("scene_before", is_reset)
 		if _path != current_scene:
 			last_scene = current_scene
 			current_scene = _path
 		get_tree().change_scene(_path)
-		emit_signal("scene_after")
+		emit_signal("scene_after", is_reset)
 
 func reset():
 	change_scene(current_scene)

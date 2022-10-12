@@ -29,7 +29,7 @@ func _physics_process(delta):
 func idle_frame():
 	list_node.offset = (Cam.position * parallax_scale) + Vector2(wind_dist, 0)
 
-func clear():
+func clear(arg := false):
 	list_node.offset = Vector2.ZERO
 	for i in list_node.get_children():
 		i.queue_free()

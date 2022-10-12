@@ -18,6 +18,8 @@ func _ready():
 	
 	if Shared.goals.has(Shared.current_scene + "/" + name):
 		image.collect()
+	elif !Shared.is_reset:
+		Cutscene.goal_pan.act(self)
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
@@ -30,7 +32,7 @@ func _physics_process(delta):
 		elif get_rect().intersects(player.get_rect()):
 			is_follow = true
 
-func scene_before():
-	if is_follow:
+func scene_before(is_reset):
+	if !is_reset and is_follow:
 		print(name, " collected")
 		Shared.goal_grab(name)

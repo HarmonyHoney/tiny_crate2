@@ -59,4 +59,4 @@ func _physics_process(delta):
 
 func open():
 	if scene_path != "":
-		Shared.change_scene(scene_path)
+		Wipe.start(scene_path)

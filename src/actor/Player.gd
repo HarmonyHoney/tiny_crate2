@@ -7,6 +7,7 @@ var floor_accel := 12.0
 var air_accel := 7.0
 var dir_x := 1
 
+var is_input := true
 var joy := Vector2.ZERO
 var joy_last := Vector2.ZERO
 var joy_clock := Vector2.ZERO
@@ -118,18 +119,19 @@ func _physics_process(delta):
 	if Engine.editor_hint: return
 	
 	# input
-	joy_last = joy
-	joy = Input.get_vector("left", "right", "up", "down").round()
-	joy_clock.x = joy_clock.x + delta if joy.x == 0 else 0
-	joy_clock.y = joy_clock.y + delta if joy.y == 0 else 0
-	
-	btnp_jump = Input.is_action_just_pressed("jump")
-	btn_jump = Input.is_action_pressed("jump")
-	holding_jump = holding_jump + delta if btn_jump else 0.0
-	btnp_shoot = Input.is_action_just_pressed("shoot")
-	btn_shoot = Input.is_action_pressed("shoot")
-	btnp_grab = Input.is_action_just_pressed("grab")
-	btn_grab = Input.is_action_pressed("grab")
+	if is_input:
+		joy_last = joy
+		joy = Input.get_vector("left", "right", "up", "down").round()
+		joy_clock.x = joy_clock.x + delta if joy.x == 0 else 0
+		joy_clock.y = joy_clock.y + delta if joy.y == 0 else 0
+		
+		btnp_jump = Input.is_action_just_pressed("jump")
+		btn_jump = Input.is_action_pressed("jump")
+		holding_jump = holding_jump + delta if btn_jump else 0.0
+		btnp_shoot = Input.is_action_just_pressed("shoot")
+		btn_shoot = Input.is_action_pressed("shoot")
+		btnp_grab = Input.is_action_just_pressed("grab")
+		btn_grab = Input.is_action_pressed("grab")
 	
 	# dir x
 	if joy.x != 0:
