@@ -67,11 +67,9 @@ onready var squish_ease := EaseMover.new(0.4)
 export var jump_squish := Vector2.ONE
 export var land_squish := Vector2.ONE
 
-export(float, EASE) var curve_x := 0.5
-export(float, EASE) var curve_y := 0.5
-
-export var pre_a := Vector2.ZERO
-export var post_b := Vector2.ZERO
+export var lift_pre_a := Vector2(-200, 0)
+export var lift_post_b := Vector2(0, 200)
+export var lift_walk_offset := 25.0
 
 
 func _enter_tree():
@@ -198,13 +196,10 @@ func _physics_process(delta):
 		# lift
 		if lift_ease.clock == 0 and joy.y == 1:
 			lift_to = down_pos * Vector2(dir_x, 1)
-		
 		lift_ease.count(delta, joy.y == 1)
+		var x = smoothstep(0, 1, abs(velocity.x) / walk_speed) * lift_walk_offset * sign(velocity.x) if lift_ease.clock > 0 and sign(velocity.x) == sign(grab_node.position.x) else 0
 		
-		grab_node.position.x = lerp(lift_from.x, lift_to.x, ease(lift_ease.frac(), curve_x))
-		grab_node.position.y = lerp(lift_from.y, lift_to.y, ease(lift_ease.frac(), curve_y))
-#		grab_node.position = lift_from.linear_interpolate(lift_to, ease(lift_ease.frac(), curve_x))
-#		grab_node.position = lift_from.cubic_interpolate(lift_to, pre_a, post_b, lift_ease.frac())
+		grab_node.position = lift_from.cubic_interpolate(lift_to + Vector2(x, 0), lift_pre_a * Vector2(dir_x, 1), lift_post_b, lift_ease.frac())
 		
 	else:
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
@@ -243,6 +238,11 @@ func _physics_process(delta):
 	if squish_ease.clock < squish_ease.time:
 		squish_ease.count(delta)
 		image.scale = squish_ease.from.linear_interpolate(Vector2.ONE, squish_ease.frac())
+	
+	# spikes
+	if is_instance_valid(Shared.spike_map):
+		if Shared.spike_map.get_cellv(Shared.spike_map.world_to_map(position - Vector2(0, 30))) > -1:
+			die()
 
 func idle_frame():
 	# grab
@@ -306,3 +306,6 @@ func drop(is_throw := false):
 	
 	grab = null
 	is_grab = false
+
+func die():
+	Shared.reset()

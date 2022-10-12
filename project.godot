@@ -27,7 +27,7 @@ _global_script_classes=[ {
 "base": "Reference",
 "class": "EaseMover",
 "language": "GDScript",
-"path": "res://src/class/EaseMover.gd"
+"path": "res://src/class/ease_mover.gd"
 }, {
 "base": "Actor",
 "class": "Player",
