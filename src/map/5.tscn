@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://src/stage/spike_map.tscn" type="PackedScene" id=1]
 [ext_resource path="res://src/stage/SolidMap.tscn" type="PackedScene" id=2]
 [ext_resource path="res://src/actor/Box.tscn" type="PackedScene" id=3]
-[ext_resource path="res://src/actor/Player.tscn" type="PackedScene" id=5]
 [ext_resource path="res://src/actor/Door.tscn" type="PackedScene" id=6]
 [ext_resource path="res://src/actor/Goal.tscn" type="PackedScene" id=7]
 
@@ -20,11 +19,6 @@ tile_data = PoolIntArray( 458738, 0, 0, 458739, 0, 0, 458740, 0, 0, 458741, 0, 0
 [node name="Door" parent="Actors" instance=ExtResource( 6 )]
 position = Vector2( 450, 750 )
 scene_path = "res://src/map/hub.tscn"
-
-[node name="Player" parent="Actors" instance=ExtResource( 5 )]
-position = Vector2( 450, 750 )
-coyote_time = 0.1
-drop_vel = Vector2( 0, -200 )
 
 [node name="Goal" parent="Actors" instance=ExtResource( 7 )]
 position = Vector2( -1750, 350 )

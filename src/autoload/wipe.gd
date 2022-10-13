@@ -9,7 +9,9 @@ export var limit := 0.58
 
 onready var mat : ShaderMaterial = $ColorRect.material
 
-signal complete
+signal start
+signal close
+signal open
 
 func _ready():
 	visible = false
@@ -21,17 +23,18 @@ func _physics_process(delta):
 		
 		if is_in and wipe_ease.clock == 0.0:
 			is_in = false
-			emit_signal("complete", scene)
+			emit_signal("close", scene)
 			yield(Shared, "scene_after")
 		elif wipe_ease.is_complete:
 			is_wipe = false
 			visible = false
+			emit_signal("open")
 
-func start(_scene := ""):
-	Shared.player.is_input = false
-	Shared.player.joy = Vector2.ZERO
-	visible = true
-	is_wipe = true
-	is_in = true
-	wipe_ease.clock = wipe_ease.time
-	scene = _scene
+func start(_scene := Shared.current_scene):
+	if !is_wipe:
+		visible = true
+		is_wipe = true
+		is_in = true
+		wipe_ease.clock = wipe_ease.time
+		scene = _scene
+		emit_signal("start")

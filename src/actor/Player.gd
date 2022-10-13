@@ -64,7 +64,7 @@ var bullet_scene = preload("res://src/actor/Bullet.tscn")
 var fire_clock := 0.0
 export var fire_rate := 0.25
 
-onready var squish_ease := EaseMover.new(0.4)
+onready var squish_ease := EaseMover.new(0.4, Vector2.ZERO, Vector2.ONE)
 export var jump_squish := Vector2.ONE
 export var land_squish := Vector2.ONE
 
@@ -76,6 +76,11 @@ export var lift_walk_offset := 25.0
 func _enter_tree():
 	if Engine.editor_hint: return
 	Shared.player = self
+	
+	get_tree().connect("idle_frame", self, "idle_frame")
+	Wipe.connect("start", self, "input_stop")
+	Wipe.connect("open", self, "input_start")
+	Shared.connect("scene_after", self, "scene_after")
 
 func _exit_tree():
 	if Engine.editor_hint: return
@@ -97,48 +102,36 @@ func _ready():
 	#UI.debug.track(self, "joy_clock")
 	UI.debug.track(self, "dir_x")
 	
-	get_tree().connect("idle_frame", self, "idle_frame")
-	
 	Cam.follow(self)
-	
-	# door in
-	if is_instance_valid(Shared.door_in):
-		global_position = Shared.door_in.global_position
-	
-	# snap to floor
-	if check_solid(position + Vector2(0, 50)):
-		move(Vector2(0, 50))
+	scene_after()
 
 func _input(event):
 	if Engine.editor_hint: return
 	
 	if event is InputEventKey and event.is_pressed() and !event.is_echo() and event.scancode == KEY_R:
-		Shared.reset()
+		Wipe.start()
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
 	# input
+	joy_last = joy
 	if is_input:
-		joy_last = joy
 		joy = Input.get_vector("left", "right", "up", "down").round()
-		joy_clock.x = joy_clock.x + delta if joy.x == 0 else 0
-		joy_clock.y = joy_clock.y + delta if joy.y == 0 else 0
-		
 		btnp_jump = Input.is_action_just_pressed("jump")
 		btn_jump = Input.is_action_pressed("jump")
-		holding_jump = holding_jump + delta if btn_jump else 0.0
 		btnp_shoot = Input.is_action_just_pressed("shoot")
 		btn_shoot = Input.is_action_pressed("shoot")
 		btnp_grab = Input.is_action_just_pressed("grab")
 		btn_grab = Input.is_action_pressed("grab")
+	holding_jump = holding_jump + delta if btn_jump else 0.0
+	joy_clock.x = joy_clock.x + delta if joy.x == 0 else 0
+	joy_clock.y = joy_clock.y + delta if joy.y == 0 else 0
 	
 	# dir x
 	if joy.x != 0:
 		dir_x = joy.x
 		hat.scale.x = dir_x
-		#arm_l.z_index = -10 if dir_x < 0 else 0
-		#arm_r.z_index = -10 if dir_x > 0 else 0
 	
 	# start jump
 	if btn_jump and jump_count == 0 and air_clock < coyote_time and holding_jump < holding_limit:
@@ -239,7 +232,7 @@ func _physics_process(delta):
 	# squash n stretch
 	if squish_ease.clock < squish_ease.time:
 		squish_ease.count(delta)
-		image.scale = squish_ease.from.linear_interpolate(Vector2.ONE, squish_ease.frac())
+		image.scale = squish_ease.from.linear_interpolate(squish_ease.to, squish_ease.frac())
 	
 	# spikes
 	if is_instance_valid(Shared.spike_map):
@@ -252,10 +245,11 @@ func idle_frame():
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + Vector2(-47, 47)), grab_ease.frac()))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(47, 47)), grab_ease.frac()))
 
-func squish(_from := Vector2.ONE, _time := squish_ease.time):
-	squish_ease.time = _time
+func squish(_from := Vector2.ONE, _to := Vector2.ONE, _time := squish_ease.time):
 	squish_ease.reset()
+	squish_ease.time = _time
 	squish_ease.from = _from
+	squish_ease.to = _to
 
 func hit_floor():
 	jump_count = 0
@@ -311,3 +305,28 @@ func drop(is_throw := false):
 
 func die():
 	Shared.reset()
+
+func door():
+	squish(Vector2.ONE, Vector2.ZERO)
+
+func input_stop():
+	is_input = false
+	joy = Vector2.ZERO
+	btnp_jump = false
+	btn_jump = false
+	btnp_shoot = false
+	btn_shoot = false
+	btnp_grab = false
+	btn_grab = false
+
+func input_start(arg := null):
+	is_input = true
+
+func scene_after():
+	if is_instance_valid(Shared.door_in):
+		position = Shared.door_in.position
+		# snap to floor
+		if check_solid(position + Vector2(0, 50)):
+			move(Vector2(0, 50))
+	
+	squish(Vector2.ZERO, Vector2.ONE)

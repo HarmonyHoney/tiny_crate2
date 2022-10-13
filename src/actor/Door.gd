@@ -5,22 +5,26 @@ class_name Door
 export (String, FILE) var scene_path := ""
 
 var player
-var is_active_last := true
 var is_active := false
 
-var delay_ease := EaseMover.new(0.4)
 var fade_ease := EaseMover.new(0.3)
-var open_ease := EaseMover.new(0.5)
+var arrow_ease := EaseMover.new(0.5)
+var is_open := false
+var open_ease := EaseMover.new(0.4)
 
 onready var arrow := $Arrow
-onready var window := $Window
-onready var knob := $Knob
+onready var back := $Back
+onready var image := $Image
+onready var window := $Image/Window
+onready var knob := $Image/Knob
 
 func _enter_tree():
 	if Engine.editor_hint: return
 	
 	if scene_path != "" and scene_path == Shared.last_scene:
 		Shared.door_in = self
+	else:
+		open_ease.clock = open_ease.time
 
 func _ready():
 	if Engine.editor_hint: return
@@ -39,24 +43,22 @@ func _ready():
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
-	if delay_ease.clock < delay_ease.time:
-		delay_ease.count(delta)
-	else:
-		is_active = get_rect().intersects(player.get_rect()) and scene_path != ""
-		if is_active != is_active_last:
-			pass#UI.gems.is_hide = !is_active
-			
-		is_active_last = is_active
-		
-		open_ease.count(delta, is_active and player.joy.y == -1)
+	open_ease.count(delta, !is_open)
+	image.scale.x = open_ease.smooth()
+	back.visible = open_ease.clock < open_ease.time
 	
-	arrow.modulate.a = fade_ease.count(delta, is_active)
-	arrow.material.set_shader_param("fill_y", open_ease.smooth())
+	is_active = get_rect().intersects(player.get_rect()) and scene_path != "" and !Wipe.is_wipe and !Cutscene.is_playing
 	
-	if open_ease.is_complete:
-		set_physics_process(false)
-		open()
+	arrow.modulate.a = fade_ease.count(delta, is_active and !is_open)
+	
+	if arrow_ease.clock < arrow_ease.time:
+		arrow_ease.count(delta, is_active and player.joy.y == -1)
+		arrow.material.set_shader_param("fill_y", arrow_ease.smooth())
+		if arrow_ease.is_complete:
+			open()
 
 func open():
-	if scene_path != "":
+	if scene_path != "" and scene_path != "spawn":
+		is_open = true
 		Wipe.start(scene_path)
+		player.door()

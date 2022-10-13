@@ -4,6 +4,7 @@ extends Actor
 onready var image := $Image
 onready var player = Shared.player
 
+var is_collect := false
 var is_follow := false
 var follow_speed := 5.0
 var close_frac := 0.5
@@ -11,15 +12,18 @@ var close_frac := 0.5
 export var x_offset := 60.0
 export var offset := Vector2(70, -10)
 
-func _ready():
+func _enter_tree():
 	if Engine.editor_hint: return
 	
 	Shared.connect("scene_before", self, "scene_before")
+	Wipe.connect("open", self, "wipe_open")
+
+func _ready():
+	if Engine.editor_hint: return
 	
 	if Shared.goals.has(Shared.current_scene + "/" + name):
+		is_collect = true
 		image.collect()
-	elif !Shared.is_reset:
-		Cutscene.goal_pan.act(self)
 
 func _physics_process(delta):
 	if Engine.editor_hint: return
@@ -32,7 +36,11 @@ func _physics_process(delta):
 		elif get_rect().intersects(player.get_rect()):
 			is_follow = true
 
-func scene_before(is_reset):
-	if !is_reset and is_follow:
+func wipe_open():
+	if !is_collect and !Shared.is_reset:
+		Cutscene.goal_pan.act(self)
+
+func scene_before():
+	if !Shared.is_reset and is_follow:
 		print(name, " collected")
 		Shared.goal_grab(name)

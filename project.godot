@@ -51,7 +51,7 @@ config/icon="res://media/image/box_icon.png"
 [autoload]
 
 UI="*res://src/autoload/UI.tscn"
-Shared="*res://src/autoload/Shared.gd"
+Shared="*res://src/autoload/shared.tscn"
 BG="*res://src/autoload/BG.tscn"
 Cam="*res://src/autoload/Cam.tscn"
 Clouds="*res://src/autoload/Clouds.tscn"
