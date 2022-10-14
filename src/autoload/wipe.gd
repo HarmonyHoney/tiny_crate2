@@ -18,8 +18,7 @@ func _ready():
 
 func _physics_process(delta):
 	if is_wipe:
-		wipe_ease.count(delta, !is_in)
-		mat.set_shader_param("dist", lerp(-0.01, limit, wipe_ease.smooth()))
+		mat.set_shader_param("dist", lerp(-0.01, limit, wipe_ease.count(delta, !is_in)))
 		
 		if is_in and wipe_ease.clock == 0.0:
 			is_in = false
@@ -35,6 +34,6 @@ func start(_scene := Shared.current_scene):
 		visible = true
 		is_wipe = true
 		is_in = true
-		wipe_ease.clock = wipe_ease.time
+		wipe_ease.end()
 		scene = _scene
 		emit_signal("start")

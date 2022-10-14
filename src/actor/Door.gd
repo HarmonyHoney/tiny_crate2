@@ -24,7 +24,7 @@ func _enter_tree():
 	if scene_path != "" and scene_path == Shared.last_scene:
 		Shared.door_in = self
 	else:
-		open_ease.clock = open_ease.time
+		open_ease.end()
 
 func _ready():
 	if Engine.editor_hint: return
@@ -43,17 +43,15 @@ func _ready():
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
-	open_ease.count(delta, !is_open)
-	image.scale.x = open_ease.smooth()
-	back.visible = open_ease.clock < open_ease.time
+	image.scale.x = open_ease.count(delta, !is_open)
+	back.visible = open_ease.is_less
 	
 	is_active = get_rect().intersects(player.get_rect()) and scene_path != "" and !Wipe.is_wipe and !Cutscene.is_playing
 	
 	arrow.modulate.a = fade_ease.count(delta, is_active and !is_open)
 	
-	if arrow_ease.clock < arrow_ease.time:
-		arrow_ease.count(delta, is_active and player.joy.y == -1)
-		arrow.material.set_shader_param("fill_y", arrow_ease.smooth())
+	if arrow_ease.is_less:
+		arrow.material.set_shader_param("fill_y", arrow_ease.count(delta, is_active and player.joy.y == -1))
 		if arrow_ease.is_complete:
 			open()
 
@@ -61,4 +59,5 @@ func open():
 	if scene_path != "" and scene_path != "spawn":
 		is_open = true
 		Wipe.start(scene_path)
-		player.door()
+		Shared.door_out = self
+		Shared.emit_signal("door_open")

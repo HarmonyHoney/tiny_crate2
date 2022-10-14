@@ -38,7 +38,6 @@ is_moving = true
 is_solid = true
 is_colliding = true
 fall_gravity = 2000.0
-grab_speed = Vector2( 20, 20 )
 
 [node name="Sprite" type="Node2D" parent="."]
 

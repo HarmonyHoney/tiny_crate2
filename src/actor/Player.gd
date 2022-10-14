@@ -81,6 +81,7 @@ func _enter_tree():
 	Wipe.connect("start", self, "input_stop")
 	Wipe.connect("open", self, "input_start")
 	Shared.connect("scene_after", self, "scene_after")
+	Shared.connect("door_open", self, "door_open")
 
 func _exit_tree():
 	if Engine.editor_hint: return
@@ -195,7 +196,6 @@ func _physics_process(delta):
 		var x = smoothstep(0, 1, abs(velocity.x) / walk_speed) * lift_walk_offset * sign(velocity.x) if lift_ease.clock > 0 and sign(velocity.x) == sign(grab_node.position.x) else 0
 		
 		grab_node.position = lift_from.cubic_interpolate(lift_to + Vector2(x, 0), lift_pre_a * Vector2(dir_x, 1), lift_post_b, lift_ease.frac())
-		
 	else:
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
@@ -230,9 +230,9 @@ func _physics_process(delta):
 		image.position.y = lerp(image.position.y, 0, 10 * delta)
 	
 	# squash n stretch
-	if squish_ease.clock < squish_ease.time:
+	if squish_ease.is_less:
 		squish_ease.count(delta)
-		image.scale = squish_ease.from.linear_interpolate(squish_ease.to, squish_ease.frac())
+		image.scale = squish_ease.elerp(false)
 	
 	# spikes
 	if is_instance_valid(Shared.spike_map):
@@ -246,8 +246,7 @@ func idle_frame():
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(47, 47)), grab_ease.frac()))
 
 func squish(_from := Vector2.ONE, _to := Vector2.ONE, _time := squish_ease.time):
-	squish_ease.reset()
-	squish_ease.time = _time
+	squish_ease.reset(_time)
 	squish_ease.from = _from
 	squish_ease.to = _to
 
@@ -306,7 +305,7 @@ func drop(is_throw := false):
 func die():
 	Shared.reset()
 
-func door():
+func door_open():
 	squish(Vector2.ONE, Vector2.ZERO)
 
 func input_stop():

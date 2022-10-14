@@ -10,14 +10,15 @@ onready var current_scene : String = get_tree().current_scene.filename
 var last_scene := "spawn"
 
 var door_in
-#var door_out
+var door_out
+signal door_open
 
-
+var is_reset := false
 signal scene_before
 signal scene_after
-var is_reset := false
 
 var goals := []
+
 
 func _ready():
 	Wipe.connect("close", self, "change_scene")
