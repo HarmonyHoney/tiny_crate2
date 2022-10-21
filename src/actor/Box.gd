@@ -9,7 +9,6 @@ export var fall_gravity := 2000.0
 var term_vel := 2000.0
 
 var grab = null
-var grab_x := 1
 var is_grab := false
 export var grab_speed := Vector2(20, 20)
 export var grab_squish := Vector2.ONE * 0.8
@@ -77,23 +76,19 @@ func hit_floor():
 	if !is_grab:
 		snap()
 
-func grab(other, dir_x):
-	grab_x = dir_x
-	is_grab = true
-	grab_ease.reset()
+func grab(other):
 	grab = other
+	is_grab = true
 	is_stuck = false
+	grab_ease.reset()
 	print("grab: ", name)
 
 func drop(_vel := Vector2.ZERO):
+	velocity = _vel
+	grab = null
 	is_grab = false
 	is_floor = false
 	grab_ease.reset()
-	
-	if grab.position.y > position.y + size.y:
-		velocity = _vel
-	
-	grab = null
 	print("drop: ", name, " pos: ", position)
 
 func snap(_pos := position, is_y := false):

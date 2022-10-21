@@ -183,7 +183,7 @@ func _physics_process(delta):
 		if grab == null:
 			grab()
 		else:
-			drop()
+			throw()
 	
 	if is_grab:
 		# arms
@@ -291,17 +291,19 @@ func grab():
 	
 	# grab
 	if is_instance_valid(grab):
-		grab.grab(self, joy.x)
+		grab.grab(self)
 		is_grab = true
 		grab_ease.reset()
 		lift_ease.reset()
 
-# drop / throw
-func drop():
+func drop(_vel := Vector2(0, drop_vel)):
 	if is_instance_valid(grab):
-		grab.drop(Vector2(velocity.x, lerp(drop_vel, min(throw_vel, velocity.y + drop_vel), abs(velocity.x / walk_speed))))
+		grab.drop(_vel)
 	grab = null
 	is_grab = false
+
+func throw():
+	drop(Vector2(velocity.x, lerp(drop_vel, min(throw_vel, velocity.y + drop_vel), abs(velocity.x / walk_speed))) if position.y > grab.position.y + grab.size.y else Vector2(0, drop_vel))
 
 func die():
 	drop()
