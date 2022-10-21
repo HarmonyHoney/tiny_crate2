@@ -19,6 +19,8 @@ size = Vector2( 40, 40 )
 [node name="Arrow" type="Sprite" parent="."]
 material = SubResource( 1 )
 position = Vector2( 0, -80 )
+z_index = 100
+z_as_relative = false
 texture = ExtResource( 3 )
 
 [node name="Back" type="Sprite" parent="."]

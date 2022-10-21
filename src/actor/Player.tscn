@@ -120,4 +120,15 @@ width_curve = SubResource( 4 )
 default_color = Color( 1, 0.45, 0.45, 1 )
 
 [node name="Grab" type="Node2D" parent="."]
-position = Vector2( 0, -120 )
+position = Vector2( 0, -20 )
+rotation = -1.57079
+
+[node name="Hand" type="Node2D" parent="Grab"]
+position = Vector2( 120, 0 )
+
+[node name="Line2D" type="Line2D" parent="Grab/Hand"]
+points = PoolVector2Array( 0, 0, 0, 0.001 )
+width = 15.0
+default_color = Color( 1, 1, 1, 0.5 )
+begin_cap_mode = 2
+end_cap_mode = 2

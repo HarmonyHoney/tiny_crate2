@@ -39,6 +39,7 @@ is_solid = true
 is_colliding = true
 rise_gravity = 1333.33
 fall_gravity = 3333.33
+push_time = 0.08
 
 [node name="Sprite" type="Node2D" parent="."]
 

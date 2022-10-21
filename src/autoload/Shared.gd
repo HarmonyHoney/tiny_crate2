@@ -2,13 +2,13 @@ extends Node
 
 var actors := []
 var solid_maps := []
-
 var player
 var spike_map
 
 onready var current_scene : String = get_tree().current_scene.filename
 var last_scene := "spawn"
 
+var doors := []
 var door_in
 var door_out
 signal door_open

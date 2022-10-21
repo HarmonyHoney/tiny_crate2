@@ -34,11 +34,7 @@ var jump_clock := 0.0
 var jump_minimum := 0.05
 var air_clock := 0.0
 export var coyote_time := 0.125
-
-var is_push := false
-var push_ease := EaseMover.new(0.08)
-var wall_clock := 0.0
-var push_timeout := 0.2
+var last_vel := Vector2.ZERO
 
 var grab = null
 var is_grab := false
@@ -48,12 +44,16 @@ export var throw_vel := -500.0
 export var drop_vel := -100.0
 export var drop_time := 0.1
 var is_lift := false
-onready var grab_node := $Grab
+onready var grab_arm := $Grab
+onready var grab_hand := $Grab/Hand
 export var lift_pos := Vector2(0, -120)
 export var down_pos := Vector2(100, -20)
 var lift_from := lift_pos
 var lift_to := lift_pos
-var lift_ease := EaseMover.new(0.3)
+var lift_ease := EaseMover.new(0.35)
+export var lift_offset := Vector2(0, -20)
+export var lift_dist := 100.0
+var lift_x := 1.0
 
 onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
@@ -100,7 +100,6 @@ func _ready():
 	UI.debug.track(self, "has_hit")
 	UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "is_jump")
-	UI.debug.track(self, "is_push")
 	UI.debug.track(self, "joy")
 	UI.debug.track(self, "joy_last")
 	#UI.debug.track(self, "joy_clock")
@@ -164,12 +163,11 @@ func _physics_process(delta):
 	velocity.y = clamp(velocity.y + (jump_gravity if is_jump else fall_gravity) * delta, -term_vel, term_vel)
 	
 	# movement
+	last_vel = velocity
 	move(velocity * delta)
 	
 	# air clock
 	air_clock = 0.0 if is_floor else air_clock + delta
-	# wall clock
-	wall_clock = 0.0 if has_hit.x != 0 else wall_clock + delta
 	
 	# shoot
 	fire_clock = min(fire_clock + delta, fire_rate)
@@ -186,37 +184,39 @@ func _physics_process(delta):
 			throw()
 	
 	if is_grab:
-		# arms
-		grab_ease.count(delta)
-		var d = position.distance_to(grab.position)
-		if d > grab_length:
+		if position.distance_to(grab.position) > grab_length:
 			drop()
-		
-		# lift
-		if lift_ease.clock == 0 and joy.y == 1:
-			lift_to = down_pos * Vector2(dir_x, 1)
-		lift_ease.count(delta, joy.y == 1)
-		var x = smoothstep(0, 1, abs(velocity.x) / walk_speed) * lift_walk_offset * sign(velocity.x) if lift_ease.clock > 0 and sign(velocity.x) == sign(grab_node.position.x) else 0
-		
-		grab_node.position = lift_from.cubic_interpolate(lift_to + Vector2(x, 0), lift_pre_a * Vector2(dir_x, 1), lift_post_b, lift_ease.frac())
+		else:
+			# arms
+			grab_ease.count(delta)
+			
+			# lift
+			if grab.position.y > position.y:
+				lift_x = -1.0 if grab.position.x < position.x else 1.0
+				lift_ease.end()
+			
+			var a = rad2deg(grab_arm.get_angle_to(grab.global_position))
+			print(a)
+			
+			if abs(a) > 1.0:
+				lift_ease.count(delta * 0.2, a < 0.0)
+			
+			if joy.y == 0:
+				var f = lift_ease.frac()
+				if f < 0.35 or f > 0.75:
+					lift_ease.count(delta * (0.1 if f > 0.5 else 0.15), f > 0.5)
+			else:
+				if lift_ease.frac() < 0.35 and joy.y == 1:
+					lift_x = dir_x
+				
+				
+				
+				lift_ease.count(delta, joy.y == 1)
+			
+			grab_arm.rotation_degrees = -90 + (lift_ease.frac() * 90.0 * lift_x)
 	else:
 		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
 		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
-	
-	# push
-	if is_push:
-		if joy.x == 0 or wall_clock > push_timeout:
-			is_push = false
-			push_ease.reset()
-		elif has_hit.x != 0:
-			var pb = get_actor("box", position + Vector2(dir_x * 10, 0))
-			if is_instance_valid(pb) and pb.is_floor:
-				pb.push(dir_x)
-	else:
-		push_ease.count(delta, is_floor and !is_grab and has_hit.x != 0)
-		if push_ease.is_complete:
-			push_ease.reset()
-			is_push = true
 	
 	# body
 	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0
@@ -294,7 +294,8 @@ func grab():
 		grab.grab(self)
 		is_grab = true
 		grab_ease.reset()
-		lift_ease.reset()
+		lift_ease.end()
+		lift_x = -1.0 if grab.position.x < position.x else 1.0
 
 func drop(_vel := Vector2(0, drop_vel)):
 	if is_instance_valid(grab):
@@ -329,10 +330,10 @@ func scene_before():
 	drop()
 
 func scene_after():
-	if is_instance_valid(Shared.door_in):
-		position = Shared.door_in.position
-		# snap to floor
-		if check_solid(position + Vector2(0, 50)):
-			move(Vector2(0, 50))
+	position = Shared.door_in.position if is_instance_valid(Shared.door_in) else Shared.doors[0].position if Shared.doors.size() > 0 else position
+
+	# snap to floor
+	if check_solid(position + Vector2(0, 50)):
+		move(Vector2(0, 50))
 	
 	squish(Vector2.ZERO, Vector2.ONE)
