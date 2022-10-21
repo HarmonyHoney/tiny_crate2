@@ -48,7 +48,7 @@ func wipe_open():
 		Cutscene.goal_pan.act(self)
 
 func door_open():
-	if is_instance_valid(Shared.door_out):
+	if is_collect and is_instance_valid(Shared.door_out):
 		is_door = true
 		door_ease.from = position
 		door_ease.to = Shared.door_out.position + Vector2(0, 5)

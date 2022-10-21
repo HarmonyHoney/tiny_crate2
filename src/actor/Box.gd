@@ -5,7 +5,8 @@ class_name Box
 onready var sprite := $Sprite
 
 export var rise_gravity := 1000.0
-export var fall_gravity := 1000.0
+export var fall_gravity := 2000.0
+var term_vel := 2000.0
 
 var grab = null
 var grab_x := 1
@@ -58,7 +59,7 @@ func _physics_process(delta):
 	# move
 	else:
 		# gravity
-		velocity.y += (fall_gravity if velocity.y > 0.0 else rise_gravity) * delta
+		velocity.y = clamp(velocity.y + (fall_gravity if velocity.y > 0.0 else rise_gravity) * delta, -term_vel, term_vel)
 		
 		# move
 		move(velocity * delta)

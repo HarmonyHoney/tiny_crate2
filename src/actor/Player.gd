@@ -25,6 +25,7 @@ var holding_limit := 0.3
 var jump_speed := 500.0
 var jump_gravity := 500.0
 var fall_gravity := 1000.0
+var term_vel := 2000.0
 export var set_jump := false setget set_jump
 export var jump_height := 240.0
 export var jump_time := 0.6
@@ -43,8 +44,8 @@ var grab = null
 var is_grab := false
 var grab_ease := EaseMover.new(0.15)
 export var grab_length := 200.0
-export var throw_vel := Vector2(350, -500)
-export var drop_vel := Vector2(0, -100)
+export var throw_vel := -500.0
+export var drop_vel := -100.0
 export var drop_time := 0.1
 var is_lift := false
 onready var grab_node := $Grab
@@ -80,6 +81,7 @@ func _enter_tree():
 	get_tree().connect("idle_frame", self, "idle_frame")
 	Wipe.connect("start", self, "input_stop")
 	Wipe.connect("open", self, "input_start")
+	Shared.connect("scene_before", self, "scene_before")
 	Shared.connect("scene_after", self, "scene_after")
 	Shared.connect("door_open", self, "door_open")
 
@@ -92,6 +94,7 @@ func _ready():
 	
 	solve_jump()
 	
+	UI.debug.track(self, "velocity")
 	UI.debug.track(self, "position")
 	UI.debug.track(self, "remainder")
 	UI.debug.track(self, "has_hit")
@@ -158,7 +161,7 @@ func _physics_process(delta):
 	velocity.x = lerp(velocity.x, joy.x * walk_speed , (floor_accel if is_floor else air_accel) * delta)
 	
 	# gravity
-	velocity.y += (jump_gravity if is_jump else fall_gravity) * delta
+	velocity.y = clamp(velocity.y + (jump_gravity if is_jump else fall_gravity) * delta, -term_vel, term_vel)
 	
 	# movement
 	move(velocity * delta)
@@ -180,7 +183,7 @@ func _physics_process(delta):
 		if grab == null:
 			grab()
 		else:
-			drop(joy_clock.x < drop_time)
+			drop()
 	
 	if is_grab:
 		# arms
@@ -231,9 +234,7 @@ func _physics_process(delta):
 	
 	# squash n stretch
 	if squish_ease.is_less:
-		squish_ease.count(delta)
-		image.scale = squish_ease.elerp(false)
-	
+		image.scale = squish_ease.move(delta, true, false)
 	# spikes
 	if is_instance_valid(Shared.spike_map):
 		if Shared.spike_map.get_cellv(Shared.spike_map.world_to_map(position - Vector2(0, 30))) > -1:
@@ -263,6 +264,7 @@ func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
 	fall_gravity = jump_gravity * fall_mult
+	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall_gravity: ", fall_gravity)
 
 func shoot():
 	var b = bullet_scene.instance()
@@ -295,15 +297,15 @@ func grab():
 		lift_ease.reset()
 
 # drop / throw
-func drop(is_throw := false):
-	var tv = Vector2(max(throw_vel.x, abs(velocity.x)) * dir_x, min(throw_vel.y, velocity.y))
-	grab.drop(tv if is_throw else drop_vel)
-	
+func drop():
+	if is_instance_valid(grab):
+		grab.drop(Vector2(velocity.x, lerp(drop_vel, min(throw_vel, velocity.y + drop_vel), abs(velocity.x / walk_speed))))
 	grab = null
 	is_grab = false
 
 func die():
-	Shared.reset()
+	drop()
+	Wipe.start()
 
 func door_open():
 	squish(Vector2.ONE, Vector2.ZERO)
@@ -320,6 +322,9 @@ func input_stop():
 
 func input_start(arg := null):
 	is_input = true
+
+func scene_before():
+	drop()
 
 func scene_after():
 	if is_instance_valid(Shared.door_in):
