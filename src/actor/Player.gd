@@ -191,15 +191,7 @@ func _physics_process(delta):
 			grab_ease.count(delta)
 			
 			# lift
-			if grab.position.y > position.y:
-				lift_x = -1.0 if grab.position.x < position.x else 1.0
-				lift_ease.end()
-			
-			var a = rad2deg(grab_arm.get_angle_to(grab.global_position))
-			print(a)
-			
-			if abs(a) > 1.0:
-				lift_ease.count(delta * 0.2, a < 0.0)
+			lift_x = -1.0 if grab.position.x < position.x else 1.0
 			
 			if joy.y == 0:
 				var f = lift_ease.frac()
@@ -208,10 +200,11 @@ func _physics_process(delta):
 			else:
 				if lift_ease.frac() < 0.35 and joy.y == 1:
 					lift_x = dir_x
-				
-				
-				
 				lift_ease.count(delta, joy.y == 1)
+				
+				var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
+				var d = lift_ease.time * (abs(b) / 90.0)
+				lift_ease.clock = clamp(lift_ease.clock, d - 0.03, d + 0.03)
 			
 			grab_arm.rotation_degrees = -90 + (lift_ease.frac() * 90.0 * lift_x)
 	else:
@@ -296,6 +289,8 @@ func grab():
 		grab_ease.reset()
 		lift_ease.end()
 		lift_x = -1.0 if grab.position.x < position.x else 1.0
+		var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
+		lift_ease.clock = lift_ease.time * abs(b / 90.0)
 
 func drop(_vel := Vector2(0, drop_vel)):
 	if is_instance_valid(grab):

@@ -124,7 +124,7 @@ position = Vector2( 0, -20 )
 rotation = -1.57079
 
 [node name="Hand" type="Node2D" parent="Grab"]
-position = Vector2( 120, 0 )
+position = Vector2( 110, 0 )
 
 [node name="Line2D" type="Line2D" parent="Grab/Hand"]
 points = PoolVector2Array( 0, 0, 0, 0.001 )
