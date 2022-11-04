@@ -50,9 +50,7 @@ export var lift_pos := Vector2(0, -120)
 export var down_pos := Vector2(100, -20)
 var lift_from := lift_pos
 var lift_to := lift_pos
-var lift_ease := EaseMover.new(0.35)
-export var lift_offset := Vector2(0, -20)
-export var lift_dist := 100.0
+var lift_ease := EaseMover.new(0.22)
 var lift_x := 1.0
 
 onready var arm_l := $Image/ArmL
@@ -68,6 +66,7 @@ export var fire_rate := 0.25
 onready var squish_ease := EaseMover.new(0.4, Vector2.ZERO, Vector2.ONE)
 export var jump_squish := Vector2.ONE
 export var land_squish := Vector2.ONE
+export var duck_squish := Vector2.ONE
 
 export var lift_pre_a := Vector2(-200, 0)
 export var lift_post_b := Vector2(0, 200)
@@ -191,7 +190,9 @@ func _physics_process(delta):
 			grab_ease.count(delta)
 			
 			# lift
-			lift_x = -1.0 if grab.position.x < position.x else 1.0
+			#print(abs(grab.position.x - position.x))
+			if abs(grab.position.x - position.x) > 50:
+				lift_x = -1.0 if grab.position.x < position.x else 1.0
 			
 			if joy.y == 0:
 				var f = lift_ease.frac()
@@ -208,8 +209,10 @@ func _physics_process(delta):
 			
 			grab_arm.rotation_degrees = -90 + (lift_ease.frac() * 90.0 * lift_x)
 	else:
-		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, 0), 20 * delta))
-		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, 0), 20 * delta))
+		var y = 12 * joy.y
+		
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(Vector2(-30, y), 20 * delta))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(Vector2(30, y), 20 * delta))
 	
 	# body
 	walk_clock = walk_clock + (delta * dir_x) if joy.x == joy_last.x else 0.0

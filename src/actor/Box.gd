@@ -85,6 +85,7 @@ func drop(_vel := Vector2.ZERO):
 	is_grab = false
 	is_floor = false
 	grab_ease.reset()
+	snap_ease.end()
 	print(name, " drop / pos: ", position)
 
 func snap(_pos := position, is_y := false):
