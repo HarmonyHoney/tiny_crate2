@@ -73,11 +73,13 @@ func hit_floor():
 		snap()
 
 func grab(other):
+	print(name, " grab")
 	grab = other
 	is_grab = true
 	is_stuck = false
 	grab_ease.reset()
-	print(name, " grab")
+	snap_ease.end()
+	sprite.position = Vector2.ZERO
 
 func drop(_vel := Vector2.ZERO):
 	velocity = _vel

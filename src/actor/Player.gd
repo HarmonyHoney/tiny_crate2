@@ -38,20 +38,16 @@ var last_vel := Vector2.ZERO
 
 var grab = null
 var is_grab := false
+var is_push := false
 var grab_ease := EaseMover.new(0.15)
 export var grab_length := 200.0
 export var throw_vel := -500.0
 export var drop_vel := -100.0
-export var drop_time := 0.1
-var is_lift := false
 onready var grab_arm := $Grab
 onready var grab_hand := $Grab/Hand
-export var lift_pos := Vector2(0, -120)
-export var down_pos := Vector2(100, -20)
-var lift_from := lift_pos
-var lift_to := lift_pos
-var lift_ease := EaseMover.new(0.22)
+var lift_ease := EaseMover.new(0.3)
 var lift_x := 1.0
+export var lift_leash := 0.08
 
 onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
@@ -66,12 +62,6 @@ export var fire_rate := 0.25
 onready var squish_ease := EaseMover.new(0.4, Vector2.ZERO, Vector2.ONE)
 export var jump_squish := Vector2.ONE
 export var land_squish := Vector2.ONE
-export var duck_squish := Vector2.ONE
-
-export var lift_pre_a := Vector2(-200, 0)
-export var lift_post_b := Vector2(0, 200)
-export var lift_walk_offset := 25.0
-
 
 func _enter_tree():
 	if Engine.editor_hint: return
@@ -190,14 +180,11 @@ func _physics_process(delta):
 			grab_ease.count(delta)
 			
 			# lift
-			#print(abs(grab.position.x - position.x))
-			if abs(grab.position.x - position.x) > 50:
+			if abs(grab.position.x - position.x) > 15:
 				lift_x = -1.0 if grab.position.x < position.x else 1.0
 			
 			if joy.y == 0:
-				var f = lift_ease.frac()
-				if f < 0.35 or f > 0.75:
-					lift_ease.count(delta * (0.1 if f > 0.5 else 0.15), f > 0.5)
+				lift_ease.count(delta, is_push)
 			else:
 				if lift_ease.frac() < 0.35 and joy.y == 1:
 					lift_x = dir_x
@@ -205,7 +192,11 @@ func _physics_process(delta):
 				
 				var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
 				var d = lift_ease.time * (abs(b) / 90.0)
-				lift_ease.clock = clamp(lift_ease.clock, d - 0.03, d + 0.03)
+				lift_ease.clock = clamp(lift_ease.clock, d - lift_leash, d + lift_leash)
+				
+				var f = lift_ease.frac()
+				if f < 0.2 or f > 0.9:
+					is_push = f > 0.9
 			
 			grab_arm.rotation_degrees = -90 + (lift_ease.frac() * 90.0 * lift_x)
 	else:
@@ -290,9 +281,10 @@ func grab():
 		grab.grab(self)
 		is_grab = true
 		grab_ease.reset()
-		lift_ease.end()
 		lift_x = -1.0 if grab.position.x < position.x else 1.0
+		
 		var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
+		is_push = abs(b / 90.0) > 0.5
 		lift_ease.clock = lift_ease.time * abs(b / 90.0)
 
 func drop(_vel := Vector2(0, drop_vel)):
