@@ -284,7 +284,7 @@ func grab():
 		lift_x = -1.0 if grab.position.x < position.x else 1.0
 		
 		var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
-		is_push = abs(b / 90.0) > 0.5
+		is_push = is_floor and abs(b / 90.0) > 0.5
 		lift_ease.clock = lift_ease.time * abs(b / 90.0)
 
 func drop(_vel := Vector2(0, drop_vel)):

@@ -29,4 +29,5 @@ texture = ExtResource( 2 )
 
 [node name="List" type="CanvasLayer" parent="."]
 layer = -5
+visible = false
 follow_viewport_enable = true

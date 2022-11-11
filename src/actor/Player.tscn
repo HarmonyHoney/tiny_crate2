@@ -12,7 +12,7 @@ _data = [ Vector2( 0, 0.436364 ), 0.0, 0.563636, 0, 1, Vector2( 1, 1 ), 0.563636
 z_index = 10
 z_as_relative = false
 script = ExtResource( 2 )
-size = Vector2( 20, 30 )
+size = Vector2( 18, 30 )
 is_moving = true
 is_solid = true
 is_colliding = true
@@ -124,9 +124,10 @@ position = Vector2( 0, -20 )
 rotation = -1.57079
 
 [node name="Hand" type="Node2D" parent="Grab"]
-position = Vector2( 110, 0 )
+position = Vector2( 100, 0 )
 
 [node name="Line2D" type="Line2D" parent="Grab/Hand"]
+visible = false
 points = PoolVector2Array( 0, 0, 0, 0.001 )
 width = 15.0
 default_color = Color( 1, 1, 1, 0.5 )

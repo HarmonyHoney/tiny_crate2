@@ -4,5 +4,6 @@
 
 [node name="Cam" type="Camera2D"]
 position = Vector2( 800, 450 )
+offset = Vector2( 0, -30 )
 current = true
 script = ExtResource( 1 )
