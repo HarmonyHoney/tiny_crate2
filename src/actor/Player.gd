@@ -24,17 +24,21 @@ var holding_jump := 0.0
 var holding_limit := 0.3
 var jump_speed := 500.0
 var jump_gravity := 500.0
-var fall_gravity := 1000.0
+#var fall_gravity := 1000.0
 var term_vel := 2000.0
 export var set_jump := false setget set_jump
 export var jump_height := 240.0
 export var jump_time := 0.6
 export var fall_mult := 2.5
+export var water_mult := 0.5
 var jump_clock := 0.0
 var jump_minimum := 0.05
 var air_clock := 0.0
 export var coyote_time := 0.125
 var last_vel := Vector2.ZERO
+var water_clock := 0.0
+var swim_clock := 0.0
+var water_descent := 1000.0
 
 var grab = null
 var is_grab := false
@@ -48,6 +52,7 @@ onready var grab_hand := $Grab/Hand
 var lift_ease := EaseMover.new(0.3)
 var lift_x := 1.0
 export var lift_leash := 0.08
+export var hand_offset := Vector2(47, 47)
 
 onready var arm_l := $Image/ArmL
 onready var arm_r := $Image/ArmR
@@ -126,8 +131,8 @@ func _physics_process(delta):
 		hat.scale.x = dir_x
 	
 	# start jump
-	if btn_jump and jump_count == 0 and air_clock < coyote_time and holding_jump < holding_limit:
-		velocity.y = -jump_speed
+	if btn_jump and (jump_count == 0 or is_water) and air_clock < coyote_time and holding_jump < holding_limit:
+		velocity.y = -jump_speed * (.5 if is_water else 1)
 		is_jump = true
 		jump_clock = 0.0
 		jump_count += 1
@@ -148,15 +153,26 @@ func _physics_process(delta):
 	# walking
 	velocity.x = lerp(velocity.x, joy.x * walk_speed , (floor_accel if is_floor else air_accel) * delta)
 	
+	
+	# water
+	if is_water:
+		#velocity.y = clamp(velocity)
+		
+		# arms swimming
+		if !is_grab and joy.y == 0 and joy_last.y < 0.0:
+			print(arm_l.get_point_position(1).y)
+			var swim_vel = 1000.0 * -arm_l.get_point_position(1).y
+			velocity.y += swim_vel * joy_last.y * delta
 	# gravity
-	velocity.y = clamp(velocity.y + (jump_gravity if is_jump else fall_gravity) * delta, -term_vel, term_vel)
+	velocity.y = clamp(velocity.y + (jump_gravity * (water_mult if is_water else 1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)
 	
 	# movement
 	last_vel = velocity
 	move(velocity * delta)
 	
 	# air clock
-	air_clock = 0.0 if is_floor else air_clock + delta
+	air_clock = 0.0 if is_floor or is_water else air_clock + delta
+	water_clock = water_clock + delta if is_water else 0.0
 	
 	# shoot
 	fire_clock = min(fire_clock + delta, fire_rate)
@@ -230,8 +246,8 @@ func _physics_process(delta):
 func idle_frame():
 	# grab
 	if is_grab and is_instance_valid(grab):
-		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + Vector2(-47, 47)), grab_ease.frac()))
-		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + Vector2(47, 47)), grab_ease.frac()))
+		arm_l.set_point_position(1, arm_l.get_point_position(1).linear_interpolate(arm_l.to_local(grab.global_position + hand_offset * Vector2(-1, 1)), grab_ease.frac()))
+		arm_r.set_point_position(1, arm_r.get_point_position(1).linear_interpolate(arm_r.to_local(grab.global_position + hand_offset), grab_ease.frac()))
 
 func squish(_from := Vector2.ONE, _to := Vector2.ONE, _time := squish_ease.time):
 	squish_ease.reset(_time)
@@ -250,8 +266,7 @@ func set_jump(arg := false):
 func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
-	fall_gravity = jump_gravity * fall_mult
-	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall_gravity: ", fall_gravity)
+	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall: ", jump_gravity * fall_mult, " water: ", jump_gravity * water_mult)
 
 func shoot():
 	var b = bullet_scene.instance()

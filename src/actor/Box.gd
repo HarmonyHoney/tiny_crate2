@@ -5,7 +5,7 @@ class_name Box
 onready var sprite := $Sprite
 
 export var rise_gravity := 1000.0
-export var fall_gravity := 2000.0
+export var fall_mult := 2.0
 var term_vel := 2000.0
 
 var grab = null
@@ -53,8 +53,16 @@ func _physics_process(delta):
 		pass
 	# move
 	else:
-		# gravity
-		velocity.y = clamp(velocity.y + (fall_gravity if velocity.y > 0.0 else rise_gravity) * delta, -term_vel, term_vel)
+		if is_water:
+			velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
+			
+			# grav
+			var to = velocity.y + (water_level - position.y)
+			velocity.y = clamp(lerp(velocity.y, to, delta * 25.0), -100, term_vel)
+			
+		else:
+			# gravity
+			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
 		# move
 		move(velocity * delta)

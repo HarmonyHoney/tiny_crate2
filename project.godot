@@ -45,7 +45,7 @@ _global_script_class_icons={
 [application]
 
 config/name="New1"
-run/main_scene="res://src/map/cave.tscn"
+run/main_scene="res://src/map/cave/cave.tscn"
 config/icon="res://media/image/box_icon.png"
 
 [autoload]

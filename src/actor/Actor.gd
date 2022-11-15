@@ -22,6 +22,9 @@ var has_hit := Vector2.ZERO
 # is on floor and air time
 var is_floor := false
 var air_frames := 0
+var is_water := false
+var water_frames := 0
+var water_level := 0.0
 
 func _enter_tree():
 	if Engine.editor_hint: return
@@ -78,6 +81,16 @@ func move(_vel := Vector2.ZERO):
 	# last pos
 	last_move = position - last_move
 	just_moved()
+	
+	# water
+	is_water = false
+	for i in Shared.water_maps:
+		if i.get_cellv(i.world_to_map(position + Vector2(0, size.y))) != -1:
+			is_water = true
+			if water_frames == 0:
+				water_level = stepify(position.y + size.y, 100)
+			break
+	water_frames = water_frames + 1 if is_water else 0
 
 # move step by step and check for solids
 func move_step(dist : int, is_y := false):

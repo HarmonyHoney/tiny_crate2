@@ -2,6 +2,7 @@ extends Node
 
 var actors := []
 var solid_maps := []
+var water_maps := []
 var player
 var spike_map
 

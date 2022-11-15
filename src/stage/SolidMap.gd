@@ -1,14 +1,20 @@
 tool
 extends TileMap
 
+enum types {solid, water}
+export(types) var type := 0
 
 func _enter_tree():
 	if Engine.editor_hint: return
-	Shared.solid_maps.append(self)
+	match type:
+		types.solid: Shared.solid_maps.append(self)
+		types.water: Shared.water_maps.append(self)
 
 func _exit_tree():
 	if Engine.editor_hint: return
-	Shared.solid_maps.erase(self)
+	match type:
+		types.solid: Shared.solid_maps.erase(self)
+		types.water: Shared.water_maps.erase(self)
 
 onready var auto = get_child(0)
 export var bg_palette := 0

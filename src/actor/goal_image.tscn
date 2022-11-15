@@ -7,7 +7,7 @@
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 3 )
-shader_param/width = 0.39
+shader_param/width = 0.5
 
 [node name="Image" type="Node2D"]
 script = ExtResource( 4 )
