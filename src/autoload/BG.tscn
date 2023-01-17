@@ -5,14 +5,14 @@
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 1 )
-shader_param/flip = true
-shader_param/c0 = Color( 0.14902, 0, 0.14902, 1 )
-shader_param/c1 = Color( 0, 0, 0.25098, 1 )
+shader_param/flip = false
+shader_param/c0 = Color( 0, 0, 0.25098, 1 )
+shader_param/c1 = Color( 0.14902, 0, 0.14902, 1 )
 
 [node name="BG" type="CanvasLayer"]
 layer = -10
 script = ExtResource( 2 )
-pc = PoolColorArray( 0, 0.952941, 1, 1, 0.501961, 0, 1, 1, 0, 0, 0.25098, 1, 0.14902, 0, 0.14902, 1 )
+pc = PoolColorArray( 0, 0.952941, 1, 1, 0.501961, 0, 1, 1, 0, 0, 0.25098, 1, 0.14902, 0, 0.14902, 1, 0, 0, 1, 1, 0, 1, 1, 1 )
 
 [node name="ColorRect" type="ColorRect" parent="."]
 material = SubResource( 1 )
