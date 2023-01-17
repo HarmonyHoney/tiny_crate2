@@ -23,7 +23,7 @@ position = Vector2( 1950, 50 )
 
 [node name="Door" parent="Actors" instance=ExtResource( 4 )]
 position = Vector2( 1250, 250 )
-scene_path = "res://src/map/cave.tscn"
+scene_path = "res://src/map/cave/0_hub.tscn"
 
 [node name="Goal" parent="Actors" instance=ExtResource( 3 )]
 position = Vector2( 50, 150 )

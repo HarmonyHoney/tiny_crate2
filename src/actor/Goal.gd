@@ -44,7 +44,7 @@ func _physics_process(delta):
 			is_follow = true
 
 func wipe_open():
-	if !is_collect and !Shared.is_reset:
+	if !Shared.is_reset:
 		Cutscene.goal_pan.act(self)
 
 func door_open():

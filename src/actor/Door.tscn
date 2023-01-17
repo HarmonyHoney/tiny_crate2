@@ -32,7 +32,7 @@ texture = ExtResource( 1 )
 position = Vector2( -40, 0 )
 
 [node name="Door" type="Sprite" parent="Image"]
-modulate = Color( 1, 0.603922, 0, 1 )
+modulate = Color( 1, 0.666667, 0, 1 )
 light_mask = 2
 position = Vector2( 40, 0 )
 texture = ExtResource( 1 )
