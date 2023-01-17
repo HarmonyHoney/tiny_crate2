@@ -3,7 +3,7 @@ extends CanvasLayer
 onready var debug := $Control/Debug
 
 onready var gems := $Control/Gems
-onready var gems_label := $Control/Gems/Label
+onready var gems_label := $Control/Gems/Center/Label
 
 func _ready():
 	for i in $Control.get_children():

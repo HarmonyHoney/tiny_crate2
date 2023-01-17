@@ -79,7 +79,7 @@ script = ExtResource( 6 )
 hide_offset = Vector2( 0, -100 )
 is_hide = true
 hide_curve = 2.5
-scale_path = NodePath("Control/Image")
+scale_path = [ NodePath("Control/Image"), NodePath("Center/Label") ]
 scale_range = Vector2( 1, 0 )
 
 [node name="Control" type="Control" parent="Control/Gems"]
@@ -93,10 +93,14 @@ size_flags_vertical = 4
 [node name="Image" parent="Control/Gems/Control" instance=ExtResource( 5 )]
 position = Vector2( 50, 50 )
 
-[node name="Label" type="Label" parent="Control/Gems"]
+[node name="Center" type="CenterContainer" parent="Control/Gems"]
 margin_left = 834.0
-margin_top = 24.0
 margin_right = 869.0
+margin_bottom = 100.0
+
+[node name="Label" type="Label" parent="Control/Gems/Center"]
+margin_top = 24.0
+margin_right = 35.0
 margin_bottom = 75.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 3 )
