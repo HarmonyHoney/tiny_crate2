@@ -85,7 +85,7 @@ func move(_vel := Vector2.ZERO):
 	# water
 	is_water = false
 	for i in Shared.water_maps:
-		if i.get_cellv(i.world_to_map(position + Vector2(0, size.y))) != -1:
+		if i.get_cellv(i.world_to_map(position + Vector2(0, size.y * 0.5))) != -1:
 			is_water = true
 			if water_frames == 0:
 				water_level = stepify(position.y + size.y, 100)

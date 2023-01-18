@@ -30,7 +30,9 @@ export var set_jump := false setget set_jump
 export var jump_height := 240.0
 export var jump_time := 0.6
 export var fall_mult := 2.5
-export var water_mult := 0.5
+export var water_fall := -1.5
+export var water_rise := -0.3
+export var swim_speed := 1000.0
 var jump_clock := 0.0
 var jump_minimum := 0.05
 var air_clock := 0.0
@@ -159,12 +161,10 @@ func _physics_process(delta):
 		#velocity.y = clamp(velocity)
 		
 		# arms swimming
-		if !is_grab and joy.y == 0 and joy_last.y < 0.0:
-			print(arm_l.get_point_position(1).y)
-			var swim_vel = 1000.0 * -arm_l.get_point_position(1).y
-			velocity.y += swim_vel * joy_last.y * delta
+		if !is_grab and joy.y == 0 and joy_last.y != 0:
+			velocity.y += swim_speed * arm_l.get_point_position(1).y * delta
 	# gravity
-	velocity.y = clamp(velocity.y + (jump_gravity * (water_mult if is_water else 1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)
+	velocity.y = clamp(velocity.y + (jump_gravity * ((water_fall if velocity.y > 0 else water_rise) if is_water else 1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)
 	
 	# movement
 	last_vel = velocity
@@ -266,7 +266,7 @@ func set_jump(arg := false):
 func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
-	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall: ", jump_gravity * fall_mult, " water: ", jump_gravity * water_mult)
+	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall: ", jump_gravity * fall_mult, " water: ", jump_gravity * water_fall)
 
 func shoot():
 	var b = bullet_scene.instance()

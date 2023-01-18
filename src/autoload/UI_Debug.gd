@@ -2,17 +2,17 @@ extends Control
 
 onready var label := $Label
 
-#var target
-#var meta := ""
-
 var targets := []
 var vars := []
 
 
 func track(_self, _meta):
-	#print("track(", _self.name, ", ", _meta, ")")
 	targets.append(_self)
 	vars.append(_meta)
+
+func _input(event):
+	if event.is_action_pressed("ui_debug"):
+		visible = !visible
 
 func _physics_process(delta):
 	label.text = ""
