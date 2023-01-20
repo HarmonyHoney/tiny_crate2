@@ -7,6 +7,8 @@ onready var sprite := $Sprite
 export var rise_gravity := 1000.0
 export var fall_mult := 2.0
 var term_vel := 2000.0
+export var water_fall := -3.0
+export var water_rise := -0.3
 
 var grab = null
 var is_grab := false
@@ -55,14 +57,8 @@ func _physics_process(delta):
 	else:
 		if is_water:
 			velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
-			
-			# grav
-			var to = velocity.y + (water_level - position.y)
-			velocity.y = clamp(lerp(velocity.y, to, delta * 25.0), -100, term_vel)
-			
-		else:
-			# gravity
-			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
+		
+		velocity.y = clamp(velocity.y + rise_gravity * ((water_fall if velocity.y > 0 else water_rise) if is_water else fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
 		# move
 		move(velocity * delta)

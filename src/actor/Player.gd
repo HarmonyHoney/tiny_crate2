@@ -30,8 +30,9 @@ export var set_jump := false setget set_jump
 export var jump_height := 240.0
 export var jump_time := 0.6
 export var fall_mult := 2.5
-export var water_fall := -1.5
+export var water_fall := -3.0
 export var water_rise := -0.3
+export var water_jump := 0.6
 export var swim_speed := 1000.0
 var jump_clock := 0.0
 var jump_minimum := 0.05
@@ -96,6 +97,7 @@ func _ready():
 	UI.debug.track(self, "has_hit")
 	UI.debug.track(self, "is_floor")
 	UI.debug.track(self, "is_jump")
+	UI.debug.track(self, "is_water")
 	UI.debug.track(self, "joy")
 	UI.debug.track(self, "joy_last")
 	#UI.debug.track(self, "joy_clock")
@@ -134,7 +136,7 @@ func _physics_process(delta):
 	
 	# start jump
 	if btn_jump and (jump_count == 0 or is_water) and air_clock < coyote_time and holding_jump < holding_limit:
-		velocity.y = -jump_speed * (.5 if is_water else 1)
+		velocity.y = -jump_speed * (water_jump if is_water else 1)
 		is_jump = true
 		jump_clock = 0.0
 		jump_count += 1
