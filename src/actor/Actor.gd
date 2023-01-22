@@ -25,6 +25,9 @@ var air_frames := 0
 var is_water := false
 var water_frames := 0
 var water_level := 0.0
+var water_depth := 0.0
+var water_pressure := 0.0
+var water_limit := 400
 
 func _enter_tree():
 	if Engine.editor_hint: return
@@ -35,6 +38,11 @@ func _exit_tree():
 	if Engine.editor_hint: return
 	
 	Shared.actors.erase(self)
+
+func _ready():
+	if is_moving:
+		UI.debug.track(self, "position")
+		UI.debug.track(self, "water_depth")
 
 func _draw():
 	if is_draw_size:
@@ -85,10 +93,12 @@ func move(_vel := Vector2.ZERO):
 	# water
 	is_water = false
 	for i in Shared.water_maps:
-		if i.get_cellv(i.world_to_map(position + Vector2(0, size.y * 0.5))) != -1:
+		if i.get_cellv(i.world_to_map(position)) != -1:
 			is_water = true
 			if water_frames == 0:
-				water_level = stepify(position.y + size.y, 100)
+				water_level = stepify(position.y, 100)
+			water_depth = position.y - water_level
+			water_pressure = min(water_depth, water_limit)
 			break
 	water_frames = water_frames + 1 if is_water else 0
 

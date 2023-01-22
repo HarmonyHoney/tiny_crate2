@@ -7,8 +7,6 @@ onready var sprite := $Sprite
 export var rise_gravity := 1000.0
 export var fall_mult := 2.0
 var term_vel := 2000.0
-export var water_fall := -3.0
-export var water_rise := -0.3
 
 var grab = null
 var is_grab := false
@@ -26,8 +24,6 @@ var is_stuck := false
 
 func _ready():
 	if Engine.editor_hint: return
-	
-	UI.debug.track(self, "position")
 	
 	if is_sticky:
 		sprite.modulate = Color(0,1.45,0,1)
@@ -57,8 +53,9 @@ func _physics_process(delta):
 	else:
 		if is_water:
 			velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
-		
-		velocity.y = clamp(velocity.y + rise_gravity * ((water_fall if velocity.y > 0 else water_rise) if is_water else fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
+			velocity.y = lerp(velocity.y, -water_pressure * 2.0, delta * 4.0)
+		else:
+			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
 		# move
 		move(velocity * delta)
@@ -73,7 +70,7 @@ func just_moved():
 			is_stuck = true
 
 func hit_floor():
-	if !is_grab:
+	if !is_grab and !is_water:
 		snap()
 
 func grab(other):

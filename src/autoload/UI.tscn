@@ -7,9 +7,9 @@
 [ext_resource path="res://src/actor/goal_image.tscn" type="PackedScene" id=5]
 [ext_resource path="res://src/class/ease_pan.gd" type="Script" id=6]
 
-[sub_resource type="DynamicFont" id=1]
-size = 30
-outline_size = 1
+[sub_resource type="DynamicFont" id=4]
+size = 32
+outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
 use_mipmaps = true
 use_filter = true
@@ -60,14 +60,16 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 4 )
 
-[node name="Label" type="Label" parent="Control/Debug"]
+[node name="Label" type="RichTextLabel" parent="Control/Debug"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 25.0
 margin_top = 25.0
+margin_right = -25.0
+margin_bottom = -25.0
 size_flags_horizontal = 2
 size_flags_vertical = 2
-custom_fonts/font = SubResource( 1 )
+custom_fonts/normal_font = SubResource( 4 )
 text = "is_floor: false"
 
 [node name="Gems" type="HBoxContainer" parent="Control"]

@@ -30,9 +30,7 @@ export var set_jump := false setget set_jump
 export var jump_height := 240.0
 export var jump_time := 0.6
 export var fall_mult := 2.5
-export var water_fall := -3.0
-export var water_rise := -0.3
-export var water_jump := 0.6
+export var water_jump := 0.7
 export var swim_speed := 1000.0
 var jump_clock := 0.0
 var jump_minimum := 0.05
@@ -92,7 +90,6 @@ func _ready():
 	solve_jump()
 	
 	UI.debug.track(self, "velocity")
-	UI.debug.track(self, "position")
 	UI.debug.track(self, "remainder")
 	UI.debug.track(self, "has_hit")
 	UI.debug.track(self, "is_floor")
@@ -157,16 +154,16 @@ func _physics_process(delta):
 	# walking
 	velocity.x = lerp(velocity.x, joy.x * walk_speed , (floor_accel if is_floor else air_accel) * delta)
 	
-	
 	# water
 	if is_water:
-		#velocity.y = clamp(velocity)
-		
 		# arms swimming
 		if !is_grab and joy.y == 0 and joy_last.y != 0:
 			velocity.y += swim_speed * arm_l.get_point_position(1).y * delta
+		
+		velocity.y = lerp(velocity.y, -water_pressure * 2.0, delta * 4.0)
 	# gravity
-	velocity.y = clamp(velocity.y + (jump_gravity * ((water_fall if velocity.y > 0 else water_rise) if is_water else 1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)
+	else:
+		velocity.y = clamp(velocity.y + (jump_gravity * (1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)
 	
 	# movement
 	last_vel = velocity
@@ -268,7 +265,7 @@ func set_jump(arg := false):
 func solve_jump():
 	jump_gravity = (2 * jump_height) / pow(jump_time, 2)
 	jump_speed = jump_gravity * jump_time
-	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall: ", jump_gravity * fall_mult, " water: ", jump_gravity * water_fall)
+	print("jump_gravity: ", jump_gravity, " jump_speed: ", jump_speed, " fall: ", jump_gravity * fall_mult)
 
 func shoot():
 	var b = bullet_scene.instance()
