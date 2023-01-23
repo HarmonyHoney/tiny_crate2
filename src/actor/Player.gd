@@ -115,7 +115,8 @@ func _physics_process(delta):
 	# input
 	joy_last = joy
 	if is_input:
-		joy = Input.get_vector("left", "right", "up", "down").round()
+		joy = Input.get_vector("left", "right", "up", "down")
+		joy = Vector2(sign(joy.x), sign(joy.y))
 		btnp_jump = Input.is_action_just_pressed("jump")
 		btn_jump = Input.is_action_pressed("jump")
 		btnp_shoot = Input.is_action_just_pressed("shoot")

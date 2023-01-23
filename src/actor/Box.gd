@@ -10,6 +10,7 @@ var term_vel := 2000.0
 
 var grab = null
 var is_grab := false
+var is_drop := false
 export var grab_squish := Vector2.ONE * 0.8
 export var grab_speed := 20.0
 export var below_speed := 8.0
@@ -21,6 +22,8 @@ export var snap_time := 0.2
 
 export var is_sticky := false
 var is_stuck := false
+
+var carrying := 0
 
 func _ready():
 	if Engine.editor_hint: return
@@ -51,9 +54,18 @@ func _physics_process(delta):
 		pass
 	# move
 	else:
+		var above = get_actors("box", position + Vector2(0, -1))
+		carrying = 0
+		for i in above:
+			carrying += 1 + i.carrying
+		
 		if is_water:
-			velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
-			velocity.y = lerp(velocity.y, -water_pressure * 2.0, delta * 4.0)
+			if abs(velocity.x) > 1.0:
+				velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
+				if abs(velocity.x) < 1.0:
+					velocity.x = 0.0
+					snap()
+			velocity.y = lerp(velocity.y, (-water_pressure * 2.0) + (carrying * 100.0), delta * 4.0)
 		else:
 			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
@@ -70,7 +82,9 @@ func just_moved():
 			is_stuck = true
 
 func hit_floor():
-	if !is_grab and !is_water:
+#	velocity.x = 0
+	if is_drop and !is_water:
+		is_drop = false
 		snap()
 
 func grab(other):
@@ -84,6 +98,7 @@ func grab(other):
 
 func drop(_vel := Vector2.ZERO):
 	velocity = _vel
+	is_drop = true
 	grab = null
 	is_grab = false
 	is_floor = false
