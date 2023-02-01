@@ -34,6 +34,9 @@ func _ready():
 func _physics_process(delta):
 	if Engine.editor_hint: return
 	
+	var a = get_actor("box", position + Vector2(0, 5))
+	#if !is_grab and a and a.velocity.y < 1 : return
+	
 	# grab squish
 	if grab_ease.is_less:
 		sprite.scale = grab_ease.move(delta)
@@ -54,23 +57,34 @@ func _physics_process(delta):
 		pass
 	# move
 	else:
-		var above = get_actors("box", position + Vector2(0, -1))
-		carrying = 0
-		for i in above:
-			carrying += 1 + i.carrying
+		var ab = above_me()
+		var be = above_me([], false)
+		carrying = ab.size() - be.size()
 		
-		if is_water:
-			if abs(velocity.x) > 1.0:
-				velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
-				if abs(velocity.x) < 1.0:
-					velocity.x = 0.0
+		var w = false
+		for i in be:
+			if i.is_water:
+				w = true
+				break
+		
+		if is_water or (w and velocity.y == 0.0):
+			velocity.x = lerp(velocity.x, 0.0, delta * 4.0)
+			if velocity.y > 1.0:
+				velocity.y = lerp(velocity.y, 0.0, delta * 10.0)
+				if velocity.y < 1.0:
 					snap()
-			velocity.y = lerp(velocity.y, (-water_pressure * 2.0) + (carrying * 100.0), delta * 4.0)
+			else:
+				move(Vector2(0, clamp((water_level + (carrying * 50.0)) - position.y, -5, 5)))
+				#velocity.y = water_level - position.y
+			
 		else:
 			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
+		$Debug/Label.text = str(velocity.x) + "\n" + str(round(velocity.y)) + "\nc:" + str(carrying)
+		
 		# move
-		move(velocity * delta)
+		if velocity != Vector2.ZERO:
+			move(velocity * delta)
 
 func just_moved():
 	if is_sticky and !is_grab and has_hit != Vector2.ZERO:
@@ -82,10 +96,14 @@ func just_moved():
 			is_stuck = true
 
 func hit_floor():
+	snap()
 #	velocity.x = 0
-	if is_drop and !is_water:
-		is_drop = false
-		snap()
+#	if is_drop:
+#		is_drop = false
+#		snap()
+
+func hit_water():
+	pass#snap()
 
 func grab(other):
 	print(name, " grab")
@@ -108,11 +126,11 @@ func drop(_vel := Vector2.ZERO):
 
 func snap(_pos := position, is_y := false):
 	var last_pos = position
-	var p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 25) if is_y else _pos.y)
+	var p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 0) if is_y else _pos.y)
 	
 	if check_solid(p):
 		_pos += position - last_pos
-		p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 25) if is_y else _pos.y)
+		p = Vector2(_pos.x if is_y else stepify(_pos.x, 25), stepify(_pos.y, 0) if is_y else _pos.y)
 	
 	if !check_solid(p):
 		position = p
@@ -122,4 +140,12 @@ func snap(_pos := position, is_y := false):
 		
 		velocity = Vector2.ZERO
 		snap_ease.reset(snap_time)
+
+func above_me(a := [], is_up := true, _vec = Vector2(0, 90)):
+	for i in get_actors("box", position + (-_vec if is_up else _vec)):
+		if !a.has(i) and !i.is_grab and i.velocity.y == 0.0 and i.snap_ease.is_complete:
+			a.append(i)
+			i.above_me(a, is_up, _vec)
+			break
+	return a
 

@@ -97,6 +97,7 @@ func move(_vel := Vector2.ZERO):
 			is_water = true
 			if water_frames == 0:
 				water_level = stepify(position.y, 100)
+				hit_water()
 			water_depth = position.y - water_level
 			water_pressure = min(water_depth, water_limit)
 			break
@@ -133,7 +134,9 @@ func just_moved():
 # call when hitting floor
 func hit_floor():
 	print(name, ".air_frames: ", air_frames)
-	pass
+
+func hit_water():
+	print(name, ".air_frames: ", air_frames)
 
 # check area for solid tiles and actors
 func check_solid(_pos = position, _size = size):

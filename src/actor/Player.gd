@@ -210,9 +210,11 @@ func _physics_process(delta):
 				var d = lift_ease.time * (abs(b) / 90.0)
 				lift_ease.clock = clamp(lift_ease.clock, d - lift_leash, d + lift_leash)
 				
-				var f = lift_ease.frac()
-				if f < 0.2 or f > 0.9:
-					is_push = f > 0.9
+				#is_push = joy.y == 1
+				
+#				var f = lift_ease.frac()
+#				if f < 0.2 or f > 0.9:
+#					is_push = f > 0.9
 			
 			grab_arm.rotation_degrees = -90 + (lift_ease.frac() * 90.0 * lift_x)
 	else:
@@ -299,7 +301,7 @@ func grab():
 		lift_x = -1.0 if grab.position.x < position.x else 1.0
 		
 		var b = clamp(rad2deg(grab_arm.global_position.angle_to_point(grab.global_position)) - 90, -90, 90)
-		is_push = is_floor and abs(b / 90.0) > 0.5
+		is_push = false#is_floor and abs(b / 90.0) > 0.5
 		lift_ease.clock = lift_ease.time * abs(b / 90.0)
 
 func drop(_vel := Vector2(0, drop_vel)):
