@@ -57,12 +57,22 @@ func _physics_process(delta):
 		pass
 	# move
 	else:
-		var ab = above_me()
-		var be = above_me([], false)
-		carrying = ab.size() - be.size()
+		var c = connected()
+		var above = 0
+		var below = 0
+		
+		var p = []
+		var my = stepify(position.y, 50)
+		for i in c:
+			var y = stepify(i.position.y, 50)
+			if !p.has(y):
+				p.append(y)
+				if y < my: above += 1
+				elif y > my: below += 1
+		carrying = above - below
 		
 		var w = false
-		for i in be:
+		for i in c:
 			if i.is_water:
 				w = true
 				break
@@ -80,7 +90,7 @@ func _physics_process(delta):
 		else:
 			velocity.y = clamp(velocity.y + rise_gravity * (fall_mult if velocity.y > 0.0 else 1.0) * delta, -term_vel, term_vel)
 		
-		$Debug/Label.text = str(velocity.x) + "\n" + str(round(velocity.y)) + "\nc:" + str(carrying)
+		$Debug/Label.text = str(velocity.x) + "\n" + str(round(velocity.y)) + "\nab:" + str(above) + ", " + str(below) + "\nc:" + str(carrying)
 		
 		# move
 		if velocity != Vector2.ZERO:
@@ -141,11 +151,10 @@ func snap(_pos := position, is_y := false):
 		velocity = Vector2.ZERO
 		snap_ease.reset(snap_time)
 
-func above_me(a := [], is_up := true, _vec = Vector2(0, 90)):
-	for i in get_actors("box", position + (-_vec if is_up else _vec)):
-		if !a.has(i) and !i.is_grab and i.velocity.y == 0.0 and i.snap_ease.is_complete:
+func connected(a := [self], vec = Vector2(0, 40), step = 0):
+	for i in get_actors("box", position, size + vec):
+		if !a.has(i) and !i.is_grab:
 			a.append(i)
-			i.above_me(a, is_up, _vec)
-			break
+			i.connected(a, vec, step + 1)
 	return a
 

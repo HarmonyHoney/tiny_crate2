@@ -50,8 +50,23 @@ position = Vector2( 2650, -3050 )
 [node name="Box11" parent="Actors" instance=ExtResource( 11 )]
 position = Vector2( 2700, -3150 )
 
+[node name="Box13" parent="Actors" instance=ExtResource( 11 )]
+position = Vector2( 2950, -3250 )
+
+[node name="Box14" parent="Actors" instance=ExtResource( 11 )]
+position = Vector2( 3000, -3350 )
+
 [node name="Box12" parent="Actors" instance=ExtResource( 11 )]
 position = Vector2( 4050, -3550 )
+
+[node name="Box15" parent="Actors" instance=ExtResource( 11 )]
+position = Vector2( 4200, -3550 )
+
+[node name="Box16" parent="Actors" instance=ExtResource( 11 )]
+position = Vector2( 4150, -3650 )
+
+[node name="Box17" parent="Actors" instance=ExtResource( 11 )]
+position = Vector2( 4350, -3550 )
 
 [node name="Box5" parent="Actors" instance=ExtResource( 11 )]
 position = Vector2( -3000, -3150 )
