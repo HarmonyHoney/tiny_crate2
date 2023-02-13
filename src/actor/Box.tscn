@@ -40,6 +40,7 @@ font_data = ExtResource( 3 )
 z_index = 5
 z_as_relative = false
 script = ExtResource( 2 )
+is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true

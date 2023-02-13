@@ -19,6 +19,7 @@ var btnp_grab := false
 var btn_grab := false
 
 var is_jump := false
+var is_swim_jump := false
 var jump_count := 0
 var holding_jump := 0.0
 var holding_limit := 0.3
@@ -133,9 +134,10 @@ func _physics_process(delta):
 		hat.scale.x = dir_x
 	
 	# start jump
-	if btn_jump and (jump_count == 0 or is_water) and air_clock < coyote_time and holding_jump < holding_limit:
+	if btn_jump and ((is_water and water_depth < 10 and !is_swim_jump) or (jump_count == 0 and air_clock < coyote_time and holding_jump < holding_limit)):
 		velocity.y = -jump_speed * (water_jump if is_water else 1)
 		is_jump = true
+		if is_water: is_swim_jump = true
 		jump_clock = 0.0
 		jump_count += 1
 		squish(jump_squish)
@@ -152,16 +154,20 @@ func _physics_process(delta):
 			elif jump_clock > jump_minimum:
 				is_jump = false
 	
+	if is_swim_jump:
+		is_swim_jump = btn_jump
+	
 	# walking
 	velocity.x = lerp(velocity.x, joy.x * walk_speed , (floor_accel if is_floor else air_accel) * delta)
 	
 	# water
 	if is_water:
-		# arms swimming
-		if !is_grab and joy.y == 0 and joy_last.y != 0:
-			velocity.y += swim_speed * arm_l.get_point_position(1).y * delta
+		var v = Vector2(joy.x, -1 if btn_jump else joy.y) * swim_speed
 		
-		velocity.y = lerp(velocity.y, -water_pressure * 2.0, delta * 4.0)
+		velocity = velocity.linear_interpolate(v, delta * 10.0)
+		if !btn_jump or !(is_jump and is_swim_jump):
+			velocity.y = max(velocity.y, -water_depth * 10.0)
+		
 	# gravity
 	else:
 		velocity.y = clamp(velocity.y + (jump_gravity * (1.0 if is_jump else fall_mult)) * delta, -term_vel, term_vel)

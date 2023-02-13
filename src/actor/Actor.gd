@@ -79,17 +79,6 @@ func move(_vel := Vector2.ZERO):
 	if dy != 0:
 		move_step(dy, true)
 	
-	# set floor
-	if has_moved.y: is_floor = has_hit.y == 1
-	if is_floor:
-		if air_frames > 0: hit_floor()
-		air_frames = 0
-	else: air_frames += 1
-	
-	# last pos
-	last_move = position - last_move
-	just_moved()
-	
 	# water
 	is_water = false
 	for i in Shared.water_maps:
@@ -102,6 +91,18 @@ func move(_vel := Vector2.ZERO):
 			water_pressure = min(water_depth, water_limit)
 			break
 	water_frames = water_frames + 1 if is_water else 0
+	
+	# set floor
+	if has_moved.y: is_floor = has_hit.y == 1 and !is_water
+	if is_floor and air_frames > 0: hit_floor()
+	
+	if is_floor or is_water:
+		air_frames = 0
+	else: air_frames += 1
+	
+	# last pos
+	last_move = position - last_move
+	just_moved()
 
 # move step by step and check for solids
 func move_step(dist : int, is_y := false):
