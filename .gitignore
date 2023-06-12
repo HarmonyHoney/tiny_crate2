@@ -1,3 +1,6 @@
 .import/
-[Ee]xport/
-[Bb]uild/
+[Ex]xport/_mac*
+[Ee]xport/[Ww]eb
+[Ee]xport/[Ww]in
+[Ee]xport/[Ll]inux
+[Ee]xport/[Mm]ac
