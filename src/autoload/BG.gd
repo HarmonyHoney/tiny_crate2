@@ -4,6 +4,10 @@ export var pc : PoolColorArray
 
 onready var mat : ShaderMaterial = $ColorRect.material
 
+func custom(col1, col2):
+	mat.set_shader_param("c0", col1)
+	mat.set_shader_param("c1", col2)
+
 func color(arg := 0):
 	var t = arg * 2
 	if t + 1 < pc.size():

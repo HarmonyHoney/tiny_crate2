@@ -19,10 +19,26 @@ signal scene_before
 signal scene_after
 
 var goals := []
+var debug_screen := 0
+var debug_screen_limit := 4
 
 
 func _ready():
 	Wipe.connect("close", self, "change_scene")
+
+func _input(event):
+	if event.is_action_pressed("debug_borderless"):
+		OS.window_borderless = !OS.window_borderless
+	
+	if event.is_action_pressed("debug_fullscreen"):
+		OS.window_fullscreen = !OS.window_fullscreen
+	
+	if event.is_action_pressed("debug_screen"):
+		debug_screen = posmod(debug_screen + 1, debug_screen_limit)
+		var frac = float(debug_screen + 1) / debug_screen_limit
+		var gss = OS.get_screen_size() * frac
+		OS.window_size = gss + Vector2(2 if frac == 1.0 else 0, 0)
+		OS.center_window()
 
 func change_scene(_path := current_scene):
 	if _path != "":

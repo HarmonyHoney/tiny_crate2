@@ -40,7 +40,6 @@ font_data = ExtResource( 3 )
 z_index = 5
 z_as_relative = false
 script = ExtResource( 2 )
-is_draw_size = true
 is_moving = true
 is_solid = true
 is_colliding = true
@@ -96,6 +95,7 @@ width = 13.0
 default_color = Color( 0.741176, 0.423529, 0.2, 1 )
 
 [node name="Debug" type="Node2D" parent="."]
+visible = false
 
 [node name="Label" type="Label" parent="Debug"]
 margin_left = -50.0
