@@ -7,7 +7,7 @@ Play now on [itch.io](https://harmonyhoney.itch.io/tinycrate2) ! (:
 
 
 ## License
-See [UNLICENSE](UNLICENSE) or [Unlicense.org](https://unlicense.org/) for more information.
+MIT license. See [LICENSE](LICENSE) for more information.
 
 ## Screenshots
 ![shot1](media/image/screens/1.png)
